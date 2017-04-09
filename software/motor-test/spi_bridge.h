@@ -7,8 +7,8 @@
 
 // intaction with motor driver:
 // SPI mode 0
-// max. 4 MHz = max. 4e6 bps
-// per message 12 data bits, 4 dummy bits
+// max. 1 MHz = max. 1e6 bps
+// per message 16 data bits
 
 /** A class that encapsules the SPI interface.
 * It communicates with the USB to SPI chip.
@@ -27,6 +27,11 @@ public:
     ChipSelect = 0x01,        ///< use pin as SPI chip select line
     DedicatedFunction = 0x02  ///< use pin for other special function (see datasheet)
   };
+  enum GPIODirection
+  {
+    Output = 1,
+    Input = 0
+  };
   enum InterruptPinMode
   {
     countHighPulses = 4, // b100
@@ -42,6 +47,12 @@ public:
     mode2 = 0x02,   //CPOL = 1, CPHA = 0
     mode3 = 0x03    //CPOL = 1, CPHA = 1
   };
+  enum LogicalValue
+  {
+    low = 0,
+    high = 1
+  };
+
   //! set default settings values on power-up on the chip
   void setSettings(bool currentValues, PinDesignation pinDesignation[9], bool ioValue[9], bool ioDirection[9],
     bool enableRemoteWakeUp, InterruptPinMode interruptPinMode, bool enableSPIBusRelease);
@@ -88,9 +99,9 @@ public:
   //! retrieve the stored directions of GPIO pins
   void getCurrentPinDirection();
 
-  //! perform SPI data transfer (sending and receiving), data contains data to be send and the new received data, where length is
-  //! the length of the received data
-  void spiTransfer(char *data, size_t &length);
+  //! perform SPI data transfer (sending and receiving the same length bytes),
+  //! send data in spiSendBuffer, receive to spiRecvBuffer which has to be allocated to be of at least length bytes size
+  void spiTransfer(unsigned char *spiSendBuffer, unsigned char *spiRecvBuffer, size_t length);
 
   //! request chip status
   void getChipStatus();
@@ -103,6 +114,21 @@ public:
 
   //! set the value of one GPIO pin
   void setGPOutputPin(int number, bool on);
+
+  //! set some settings that need to be adjusted before SPI transaction to a different chip
+  void prepareSPITransfer(bool idleChipSelect[9], bool activeChipSelect[9], uint32_t bitRate, int32_t spiTransactionLength);
+
+  //! set pin designation
+  void setPinDesignation(PinDesignation pinDesignation[9]);
+
+  //! set the value of the output pins
+  void setGPOutputPins(bool value[9]);
+
+  //! set the value of one GPIO pin in an internal cache, that can be applied by setGPOutputPinFlush
+  void setGPOutputPinCached(int number, bool value);
+
+  //! apply values of GPOutput pins that were previously set by setGPOutputPinCached
+  void setGPOutputPinFlush();
 
 private:
 

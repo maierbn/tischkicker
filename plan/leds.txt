@@ -1,0 +1,15 @@
+Farbe     Abstrahlwinkel Nennstrom Nennspannung Leuchtstärke Vorwiderstand-5V Vorwiderstand-24V conrad-Preis
+Grün      60deg  20mA  2.2V  40mcd   140Ω 1090Ω 10ct
+Rot       60deg  20mA  2.25V 11mcd   138Ω 1088Ω 10ct
+Gelb      30deg  30mA  2.4V  10mcd   87Ω  720Ω  15ct
+Bernstein 15deg  50mA  2.1V  13cd    58Ω  438Ω  22ct (Lieferung in 2 Wochen)
+Blau      40deg  30mA  3.2V  500mcd  60Ω  693Ω  25ct
+Hellgrün  40deg  30mA  2.1V  140 mcd 97Ω  697Ω  25ct (Lieferung in 4 Wochen)
+Orange    130deg 30mA  2.1V  400mcd  97Ω  697Ω  28ct
+Weiß      40deg  20mA  3.2V  2cd     90Ω  1040Ω 38ct
+Amber     15deg  20mA  2.2V  8100mcd 140Ω 1090Ω 43ct
+
+R = (5V-UF) / IF
+
+erhartskirche.de
+EK@iHo?0

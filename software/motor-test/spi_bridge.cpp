@@ -12,7 +12,7 @@
 #include <codecvt>
 
 
-const bool DEBUG = true;
+const bool DEBUG = false;
 
 SPIBridge::SPIBridge()
 {
@@ -46,6 +46,8 @@ void SPIBridge::initDevice()
 
   std::stringstream s;
   int n_devices = 0;
+
+  std::cout<<"Scanning USB devices . . ."<<std::string(50, '\b')<<std::flush;
 
   // enumerate until HID is found
   do
@@ -186,7 +188,7 @@ void SPIBridge::setSettings(bool currentValues, PinDesignation pinDesignation[9]
   // byte 17: other chip settings
   buffer[17] |= enableRemoteWakeUp * 0x10;
   buffer[17] |= (interruptPinMode << 1);
-  buffer[17] |= enableSPIBusRelease * 0x01;
+  buffer[17] |= (!enableSPIBusRelease) * 0x01;
 
   buffer[18] = 0x00;    // no password protection of chip settings
   // bytes 19 to 26: new password characters (not used here)
@@ -1008,16 +1010,23 @@ void SPIBridge::setCurrentPinValue(bool ioValue[9])
   // bytes 6 to 63: don't care
 }
 
-void SPIBridge::spiTransfer(char *data, size_t &length)
+void SPIBridge::spiTransfer(unsigned char *spiSendBuffer, unsigned char *spiRecvBuffer, size_t length)
 {
-  unsigned char recvBuffer[64];
-  memset(recvBuffer, 0, 64);
+  if(DEBUG || 1)
+  {
+    std::cout << "SPIBridge::spiTransfer of " << length << " bytes (hex): ";
+    for(int i=0; i<length; i++)
+    {
+      std::cout<<std::hex<<int(spiSendBuffer[i])<<" ";
+    }
+    std::cout<<std::dec<<std::endl;
+  }
 
-  if(DEBUG)
-    std::cout << "SPIBridge::spiTransfer" << std::endl;
-
-  // initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  // initialize usbSendBuffer to 0
+  unsigned char usbSendBuffer[64];
+  unsigned char usbRecvBuffer[64];
+  memset(usbSendBuffer, 0x00, 64);
+  memset(spiRecvBuffer, 0x00, length);
 
   if(length > 60)
   {
@@ -1025,82 +1034,108 @@ void SPIBridge::spiTransfer(char *data, size_t &length)
     length = 60;
   }
 
-  buffer[0] = 0x42;   // command code for "Transfer SPI Data"
-  buffer[1] = length;   // number of bytes to be transferred in this packet
-  buffer[2] = 0x00;   // reserved
-  buffer[3] = 0x00;   // reserved
+  usbSendBuffer[0] = 0x42;   // command code for "Transfer SPI Data"
+  usbSendBuffer[1] = length;   // number of bytes to be transferred in this packet
+  usbSendBuffer[2] = 0x00;   // reserved
+  usbSendBuffer[3] = 0x00;   // reserved
 
-  memcpy(buffer+4, data, length);
-
-  std::cout<<"  send buffer (hex): ";
-  for(int i=0; i<64; i++)
-  {
-    std::cout<<std::hex<<int(buffer[i])<<" ";
-  }
-  std::cout<<std::dec<<std::endl;
+  memcpy(usbSendBuffer+4, spiSendBuffer, length);
 
   for(int nMessages = 0; nMessages < 200; nMessages++)
   {
     // send command
-    hid_write(hidDevice_, buffer, 64);
-    std::cout<<"  SPIBridge::spiTransfer hid_write complete"<<std::endl;
+    hid_write(hidDevice_, usbSendBuffer, 64);
+    if(DEBUG)
+    {
+      std::cout<<"  SPIBridge::spiTransfer hid_write complete"<<std::endl;
+    }
 
     std::this_thread::sleep_for(std::chrono::microseconds(100));
 
     // receive response (blocking)
-    hid_read(hidDevice_, recvBuffer, 64);
+    hid_read(hidDevice_, usbRecvBuffer, 64);
 
-    std::cout<<"  recv buffer (hex): ";
-    for(int i=0; i<64; i++)
+    if(DEBUG)
     {
-      std::cout<<std::hex<<int(recvBuffer[i])<<" ";
-    }
-    std::cout<<std::dec<<std::endl;
+      std::cout<<"  usbRecvBuffer (hex): ";
+      for(int i=0; i<64; i++)
+      {
+        std::cout<<std::hex<<int(usbRecvBuffer[i])<<" ";
+      }
+      std::cout<<std::dec<<std::endl;
 
-    std::cout<<"  SPIBridge::spiTransfer hid_read complete, status 0x"<<std::hex<<int(recvBuffer[1])<<std::dec<<std::endl;
+      std::cout<<"  SPIBridge::spiTransfer hid_read complete, status 0x"<<std::hex<<int(usbRecvBuffer[1])<<std::dec<<std::endl;
+    }
 
     // parse response (Response 1 or 2 or 3 in data sheet)
-    assert(recvBuffer[0] == 0x42);
-    if(recvBuffer[1] == 0x00)   // SPI Data accepted, command completed successfully
+    assert(usbRecvBuffer[0] == 0x42);
+    if(usbRecvBuffer[1] == 0x00)   // SPI Data accepted, command completed successfully
     {
-      std::cout<<"> SPI Data accepted: ";
       // parse received bytes
-      length = recvBuffer[2];
-      memcpy(data, recvBuffer+4, length);
+      size_t nBytesSPIReceived = usbRecvBuffer[2];
+      memcpy(spiRecvBuffer, usbRecvBuffer+4, nBytesSPIReceived);
 
-      if(recvBuffer[3] == 0x20)   // SPI transfer started - no data to receive
+      if(DEBUG)
       {
-        std::cout<<"SPI transfer started - no data to receive"<<std::endl;
+        std::cout<<"> SPI Data accepted, "<<nBytesSPIReceived<<" bytes of SPI data received: ";
+        for(int i=0; i<nBytesSPIReceived; i++)
+        {
+          std::cout<<std::hex<<int(spiRecvBuffer[i])<<" ";
+        }
+        std::cout<<std::dec<<"Msg: ";
       }
-      else if(recvBuffer[3] == 0x30)    //SPI transfer not finished; received data available
+
+      if(usbRecvBuffer[3] == 0x20)   // SPI transfer started - no data to receive
       {
-        std::cout<<"SPI transfer not finished; received data available"<<std::endl;
+        if(DEBUG)
+        {
+          std::cout<<"SPI transfer started - no data to receive"<<std::endl;
+        }
       }
-      else if(recvBuffer[3] == 0x10)    //SPI transfer finished - no more data to send
+      else if(usbRecvBuffer[3] == 0x30)    //SPI transfer not finished; received data available
       {
-        std::cout<<"SPI transfer finished - no more data to send. Exit SPIBridge::spiTransfer."<<std::endl;
+        if(DEBUG)
+        {
+          std::cout<<"SPI transfer not finished; received data available"<<std::endl;
+        }
+      }
+      else if(usbRecvBuffer[3] == 0x10)    //SPI transfer finished - no more data to send
+      {
+        if(DEBUG)
+        {
+          std::cout<<"SPI transfer finished - no more data to send. Exit SPIBridge::spiTransfer."<<std::endl;
+        }
         break;
       }
       else
       {
-        std::cout<<"unknown status"<<std::endl;
+        std::cout<<"Error in SPIBridge::spiTransfer: unknown status " << std::hex<<int(usbRecvBuffer[3])<<std::dec<<" received"<<std::endl;
       }
       //break;
     }
-    else if(recvBuffer[1] == 0xF7)    // SPI Data not accepted, SPI bus not available (the external owner has control over it)
+    else if(usbRecvBuffer[1] == 0xF7)    // SPI Data not accepted, SPI bus not available (the external owner has control over it)
     {
-      std::cout<<"> SPI Data not accepted, SPI bus not available (the external owner has control over it)"<<std::endl;
-      getChipStatus();
+      if(DEBUG)
+      {
+        std::cout<<"> SPI Data not accepted, SPI bus not available (the external owner has control over it)"<<std::endl;
+        getChipStatus();
+      }
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
-    else if(recvBuffer[1] == 0xF8)    // SPI Data not accepted, SPI transfer in progress, cannot accept any data for the moment
+    else if(usbRecvBuffer[1] == 0xF8)    // SPI Data not accepted, SPI transfer in progress, cannot accept any data for the moment
     {
-      std::cout<<"> SPI Data not accepted, SPI transfer in progress, cannot accept any data for the moment"<<std::endl;
+      if(DEBUG)
+      {
+        std::cout<<"> SPI Data not accepted, SPI transfer in progress, cannot accept any data for the moment"<<std::endl;
+      }
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
     else
     {
-      std::cout<<"> Unknown status of SPI transfer, byte 1 is 0x"<<std::hex<<recvBuffer[1]<<std::dec<<std::endl;
+      if(DEBUG)
+      {
+        std::cout<<"> Unknown status of SPI transfer, byte 1 is 0x"<<std::hex<<usbRecvBuffer[1]<<std::dec<<std::endl;
+      }
     }
 	}
 
@@ -1359,7 +1394,13 @@ void SPIBridge::outputSettings()
 
 }
 
-void SPIBridge::setGPOutputPin(int number, bool on)
+void SPIBridge::setPinDesignation(PinDesignation pinDesignation[9])
+{
+  setSettings(true, pinDesignation, currentChipSettings_.ioValue, currentChipSettings_.ioDirection,
+    currentChipSettings_.enableRemoteWakeUp, currentChipSettings_.interruptPinMode, currentChipSettings_.enableSPIBusRelease);
+}
+
+void SPIBridge::setGPOutputPin(int number, bool value)
 {
 
   if(number < 0 || number > 8)
@@ -1368,8 +1409,41 @@ void SPIBridge::setGPOutputPin(int number, bool on)
     return;
   }
 
-  currentChipSettings_.ioValue[number] = on;
+  currentChipSettings_.ioValue[number] = value;
   setSettings(true, currentChipSettings_.pinDesignation, currentChipSettings_.ioValue,
     currentChipSettings_.ioDirection, currentChipSettings_.enableRemoteWakeUp,
     currentChipSettings_.interruptPinMode, currentChipSettings_.enableSPIBusRelease);
+}
+
+void SPIBridge::setGPOutputPinCached(int number, bool value)
+{
+  if(number < 0 || number > 8)
+  {
+    std::cout<<"SPIBridge::setGPOutputPin: Error, wrong output pin number "<<number<<std::endl;
+    return;
+  }
+
+  currentChipSettings_.ioValue[number] = value;
+}
+
+void SPIBridge::setGPOutputPinFlush()
+{
+  setSettings(true, currentChipSettings_.pinDesignation, currentChipSettings_.ioValue,
+    currentChipSettings_.ioDirection, currentChipSettings_.enableRemoteWakeUp,
+    currentChipSettings_.interruptPinMode, currentChipSettings_.enableSPIBusRelease);
+}
+
+void SPIBridge::setGPOutputPins(bool value[9])
+{
+  setSettings(true, currentChipSettings_.pinDesignation, value, currentChipSettings_.ioDirection,
+    currentChipSettings_.enableRemoteWakeUp, currentChipSettings_.interruptPinMode, currentChipSettings_.enableSPIBusRelease);
+}
+
+void SPIBridge::prepareSPITransfer(bool idleChipSelect[9], bool activeChipSelect[9], uint32_t bitRate, int32_t spiTransactionLength)
+{
+  // modify settings on chip
+  setTransferSettings(true, bitRate, idleChipSelect, activeChipSelect,
+    currentChipSettings_.delayCSToData, currentChipSettings_.delayLastByteToCS, currentChipSettings_.delayDataToData,
+    spiTransactionLength, currentChipSettings_.spiMode);
+
 }
