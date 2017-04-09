@@ -20,6 +20,9 @@ public:
   ///! turn motor to given position
   void moveToPosition(int position);
 
+  ///! returns the maximum bitrate that is possible for SPI communication
+  static double maximumSPIBitrate();
+
 private:
 
   enum RegisterAddress

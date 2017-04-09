@@ -26,7 +26,12 @@ Control::Control() :
     MotorDriver(*this,14),
     MotorDriver(*this,15)
   }),
-  ledOutput_(*this)
+  ledOutput_(*this, 0),
+  mainboardIO_(*this, 1),
+  analogDigitalConverter_({
+    AnalogDigitalConverter(*this),
+    AnalogDigitalConverter(*this)
+  })
 {
   initializeSPIBridge();
 }
@@ -44,24 +49,21 @@ void Control::initializeSPIBridge()
   pinDesignation[PinB]            = SPIBridge::PinDesignation::GPIO;               // B (demux address)
   pinDesignation[PinC]            = SPIBridge::PinDesignation::GPIO;               // C (demux address)
   pinDesignation[PinSPI_Transfer] = SPIBridge::PinDesignation::DedicatedFunction;  // SPI_Transfer (low-active)
-  pinDesignation[PinCS1]          = SPIBridge::PinDesignation::ChipSelect;         // CS1 (chip select, line 0:7, high-active)
-  pinDesignation[PinCS2]          = SPIBridge::PinDesignation::ChipSelect;         // CS2 (chip select, line 8:15, high-active)
-  pinDesignation[PinD1]           = SPIBridge::PinDesignation::GPIO;               // D1 (NXT 0:7)
-  pinDesignation[PinD2]           = SPIBridge::PinDesignation::GPIO;               // D2 (NXT 8:15)
-  pinDesignation[PinCSOutput]     = SPIBridge::PinDesignation::ChipSelect;         // chip select Output (low-active)
+  pinDesignation[PinNxt1]         = SPIBridge::PinDesignation::GPIO;               // D1 (NXT 0:7)
+  pinDesignation[PinNxt2]         = SPIBridge::PinDesignation::GPIO;               // D2 (NXT 8:15)
+  pinDesignation[PinCSMotor1]          = SPIBridge::PinDesignation::ChipSelect;         // CS1 (chip select, line 0:7, high-active)
+  pinDesignation[PinCSMotor2]          = SPIBridge::PinDesignation::ChipSelect;         // CS2 (chip select, line 8:15, high-active)
+  pinDesignation[PinCSAux]        = SPIBridge::PinDesignation::ChipSelect;         // chip select Output (high-active)
 
   // set GPIO values
-  bool ioValue[9] = {false};
+  bool ioValue[9] = {SPIBridge::LogicalValue::low};
   bool ioDirection[9] = {SPIBridge::GPIODirection::Output};
-
-  for(int i=0; i<9; i++)
-  {
-    ioValue[i] = SPIBridge::LogicalValue::low;
-    ioDirection[i] = SPIBridge::GPIODirection::Output;
-  }
+  SPIChipSelectAddress_ = 0;
 
   bool enableRemoteWakeUp = false;
   bool enableSPIBusRelease = true;
+
+  // store settings on chip
   spiBridge_.setSettings(true, pinDesignation, ioValue, ioDirection, enableRemoteWakeUp,
     SPIBridge::InterruptPinMode::noInterruptCounting, enableSPIBusRelease);
 
@@ -70,14 +72,9 @@ void Control::initializeSPIBridge()
   //bitRate = 1e5;
   //bitRate = 0;
 
-  bool idleChipSelect[9] = {SPIBridge::LogicalValue::high};      // status of ChipSelect line when SPI bus is idle: high
-  bool activeChipSelect[9] = {SPIBridge::LogicalValue::low};    // status of ChipSelect line when SPI transfer: low
-
-  for (int i=0; i<9; i++)
-  {
-    idleChipSelect[i] = SPIBridge::LogicalValue::low;
-    activeChipSelect[i] = SPIBridge::LogicalValue::high;
-  }
+  bool idleChipSelect[9] = {SPIBridge::ChipSelectValue::CSInactive};
+  bool activeChipSelect[9] = {SPIBridge::ChipSelectValue::CSInactive};
+  currentlySelectedComponent_ = None;
 
   // delays (in seconds)
   double delayCSToData = 100e-9;     //100 ns
@@ -87,87 +84,119 @@ void Control::initializeSPIBridge()
   int spiTransactionLength = 2;   // 2 bytes per packet
   SPIBridge::SPIMode spiMode = SPIBridge::SPIMode::mode0;
 
+  // store settings on chip
   spiBridge_.setTransferSettings(true, bitRate, idleChipSelect, activeChipSelect,
     delayCSToData, delayLastByteToCS, delayDataToData, spiTransactionLength, spiMode);
 
   spiBridge_.getAllSettings();
   spiBridge_.outputSettings();
+
   std::cout<<"Configuration of SPI Bridge done."<<std::endl;
 }
 
-void Control::spiTransfer(SPIComponent spiComponent, unsigned char *buffer, int length)
+void Control::selectChip(SPIComponent spiComponent, int spiTransactionLength)
 {
-  if(spiComponent != currentlySelectedComponent_ || length != currentSPITransferLength_)
+  if(spiComponent != currentlySelectedComponent_ || spiTransactionLength != currentSPITransferLength_)
   {
     // configure SPI bridge to select component
-    bool idleChipSelect[9] = {SPIBridge::LogicalValue::high};
-    bool activeChipSelect[9] = {SPIBridge::LogicalValue::low};
-
-    //CS1: high-active
-    //CS2: high-active
-    //CSOutput: low-active
+    bool activeChipSelect[9] = {SPIBridge::ChipSelectValue::CSActive};
+    bool idleChipSelect[9] = {SPIBridge::ChipSelectValue::CSInactive};
 
     uint32_t bitRate = 1e6;      // 1 MHz
-    int spiTransactionLength = length;
 
-    if(spiComponent == LEDOutput)
+    // chips that are addressed via PinCSAux
+    if(spiComponent == LEDOutput || spiComponent == mainboardIO || spiComponent == BemfADCA || spiComponent == BemfADCB)
     {
       // set bit rate
-      bitRate = 10e6;   // 10 MHz
+      switch(spiComponent)
+      {
+      case LEDOutput:
+      case mainboardIO:
+        bitRate = IOExtender::maximumSPIBitrate();
+        break;
+      case BemfADCA:
+      case BemfADCB:
+        bitRate = AnalogDigitalConverter::maximumSPIBitrate();
+        break;
+      }
 
       // set values of chip select pins
-      idleChipSelect[PinCS1] = SPIBridge::LogicalValue::low;
-      idleChipSelect[PinCS2] = SPIBridge::LogicalValue::low;
-      idleChipSelect[PinCSOutput] = SPIBridge::LogicalValue::high;
+      activeChipSelect[PinCSMotor1] = SPIBridge::ChipSelectValue::CSInactive;
+      activeChipSelect[PinCSMotor2] = SPIBridge::ChipSelectValue::CSInactive;
+      activeChipSelect[PinCSAux] = SPIBridge::ChipSelectValue::CSActive;
 
-      activeChipSelect[PinCS1] = SPIBridge::LogicalValue::low;
-      activeChipSelect[PinCS2] = SPIBridge::LogicalValue::low;
-      activeChipSelect[PinCSOutput] = SPIBridge::LogicalValue::low;
+      idleChipSelect[PinCSMotor1] = SPIBridge::ChipSelectValue::CSInactive;
+      idleChipSelect[PinCSMotor2] = SPIBridge::ChipSelectValue::CSInactive;
+      idleChipSelect[PinCSAux] = SPIBridge::ChipSelectValue::CSInactive;
 
       currentlySelectedComponent_ = spiComponent;
-      currentSPITransferLength_ = length;
+      currentSPITransferLength_ = spiTransactionLength;
 
       // store settings to spi bridge
       spiBridge_.prepareSPITransfer(idleChipSelect, activeChipSelect, bitRate, currentSPITransferLength_);
+
+      // set values of address pins
+      int newAddress = 0;
+      switch(spiComponent)
+      {
+      case LEDOutput:
+      case mainboardIO:
+        newAddress = 0;
+        break;
+      case BemfADCA:
+        newAddress = 2;    // note that the ADCs are connected this way (A=2, B=1)
+        break;
+      case BemfADCB:
+         newAddress = 1;
+        break;
+      }
+
+      if(SPIChipSelectAddress_ != newAddress)
+      {
+        SPIChipSelectAddress_ = newAddress;
+
+        spiBridge_.setGPOutputPinCached(PinC, SPIChipSelectAddress_ & 0x04);
+        spiBridge_.setGPOutputPinCached(PinB, SPIChipSelectAddress_ & 0x02);
+        spiBridge_.setGPOutputPinCached(PinA, SPIChipSelectAddress_ & 0x01);    // A is LSB
+        spiBridge_.setGPOutputPinFlush();
+      }
     }
-    else if(spiComponent >= Motor0 && spiComponent <= Motor15)
+    else if(spiComponent >= Motor0 && spiComponent <= Motor15)    // motor driver chips, are addressed via PinCSMotor1 and PinCSMotor2
     {
       int motorNumber = (int)spiComponent - (int)Motor0;
 
       // set bit rate
-      bitRate = 1e6;   // 1 MHz
+      bitRate = MotorDriver::maximumSPIBitrate();   // 1 MHz
 
       // set values of chip select pins
-      idleChipSelect[PinCS1] = SPIBridge::LogicalValue::low;
-      idleChipSelect[PinCS2] = SPIBridge::LogicalValue::low;
+      activeChipSelect[PinCSMotor1] = SPIBridge::ChipSelectValue::CSInactive;
+      activeChipSelect[PinCSMotor2] = SPIBridge::ChipSelectValue::CSInactive;
 
       if(motorNumber <= 7)
-      {
-        activeChipSelect[PinCS1] = SPIBridge::LogicalValue::high;
-        activeChipSelect[PinCS2] = SPIBridge::LogicalValue::low;
-      }
+        activeChipSelect[PinCSMotor1] = SPIBridge::ChipSelectValue::CSActive;
       else
-      {
-        activeChipSelect[PinCS1] = SPIBridge::LogicalValue::low;
-        activeChipSelect[PinCS2] = SPIBridge::LogicalValue::high;
-      }
+        activeChipSelect[PinCSMotor2] = SPIBridge::ChipSelectValue::CSActive;
 
-      idleChipSelect[PinCSOutput] = SPIBridge::LogicalValue::high;
-      activeChipSelect[PinCSOutput] = SPIBridge::LogicalValue::high;
+      activeChipSelect[PinCSAux] = SPIBridge::ChipSelectValue::CSInactive;
+
+      idleChipSelect[PinCSMotor1] = SPIBridge::ChipSelectValue::CSInactive;
+      idleChipSelect[PinCSMotor2] = SPIBridge::ChipSelectValue::CSInactive;
+      idleChipSelect[PinCSAux] = SPIBridge::ChipSelectValue::CSInactive;
 
       currentlySelectedComponent_ = spiComponent;
-      currentSPITransferLength_ = length;
+      currentSPITransferLength_ = spiTransactionLength;
 
       // store settings to spi bridge
       spiBridge_.prepareSPITransfer(idleChipSelect, activeChipSelect, bitRate, currentSPITransferLength_);
 
-      // set values of output pins
-      if(selectedChannel_ != motorNumber % 8)
+      // set values of address pins
+      if(SPIChipSelectAddress_ != motorNumber % 8)
       {
-        spiBridge_.setGPOutputPinCached(PinA, motorNumber & 0x01);
-        spiBridge_.setGPOutputPinCached(PinB, motorNumber & 0x02);
-        spiBridge_.setGPOutputPinCached(PinC, motorNumber & 0x04);
-        selectedChannel_ = motorNumber % 8;
+        SPIChipSelectAddress_ = motorNumber % 8;
+
+        spiBridge_.setGPOutputPinCached(PinC, SPIChipSelectAddress_ & 0x04);
+        spiBridge_.setGPOutputPinCached(PinB, SPIChipSelectAddress_ & 0x02);
+        spiBridge_.setGPOutputPinCached(PinA, SPIChipSelectAddress_ & 0x01);    // A is LSB
         spiBridge_.setGPOutputPinFlush();
       }
     }
@@ -177,6 +206,12 @@ void Control::spiTransfer(SPIComponent spiComponent, unsigned char *buffer, int 
       return;
     }
   }
+}
+
+void Control::spiTransfer(SPIComponent spiComponent, unsigned char *buffer, int length)
+{
+  // select chip for SPI transfer
+  selectChip(spiComponent, length);
 
   unsigned char *spiSendBuffer = buffer;
   unsigned char spiRecvBuffer[length];
@@ -190,24 +225,26 @@ void Control::spiTransfer(SPIComponent spiComponent, unsigned char *buffer, int 
 
 void Control::triggerNXT(int motorNumber, int count)
 {
-  if(selectedChannel_ != motorNumber % 8)
+  // set values of address pins
+  if(SPIChipSelectAddress_ != motorNumber % 8)
   {
-    // set values of output pins
-    spiBridge_.setGPOutputPinCached(PinA, motorNumber & 0x01);
-    spiBridge_.setGPOutputPinCached(PinB, motorNumber & 0x02);
-    spiBridge_.setGPOutputPinCached(PinC, motorNumber & 0x04);
+    SPIChipSelectAddress_ = motorNumber % 8;
+
+    spiBridge_.setGPOutputPinCached(PinC, SPIChipSelectAddress_ & 0x04);
+    spiBridge_.setGPOutputPinCached(PinB, SPIChipSelectAddress_ & 0x02);
+    spiBridge_.setGPOutputPinCached(PinA, SPIChipSelectAddress_ & 0x01);    // A is LSB
     spiBridge_.setGPOutputPinFlush();
-    selectedChannel_ = motorNumber % 8;
   }
 
   if(motorNumber < 8)
   {
     for(int i=0; i<count; i++)
     {
-      spiBridge_.setGPOutputPin(PinD1, true);
+      spiBridge_.setGPOutputPin(PinNxt1, SPIBridge::LogicalValue::high);
+
       // hold NXT high for at least 2 us
       std::this_thread::sleep_for(std::chrono::microseconds(2));
-      spiBridge_.setGPOutputPin(PinD1, false);
+      spiBridge_.setGPOutputPin(PinNxt1, SPIBridge::LogicalValue::low);
       if(i != count-1)
       {
         std::this_thread::sleep_for(std::chrono::microseconds(2));
@@ -218,10 +255,10 @@ void Control::triggerNXT(int motorNumber, int count)
   {
     for(int i=0; i<count; i++)
     {
-      spiBridge_.setGPOutputPin(PinD2, true);
+      spiBridge_.setGPOutputPin(PinNxt2, SPIBridge::LogicalValue::high);
       // hold NXT high for at least 2 us
       std::this_thread::sleep_for(std::chrono::microseconds(2));
-      spiBridge_.setGPOutputPin(PinD2, false);
+      spiBridge_.setGPOutputPin(PinNxt2, SPIBridge::LogicalValue::low);
       if(i != count-1)
       {
         std::this_thread::sleep_for(std::chrono::microseconds(2));
@@ -232,6 +269,14 @@ void Control::triggerNXT(int motorNumber, int count)
 
 void Control::testLEDs()
 {
+  std::chrono::milliseconds timestep = std::chrono::milliseconds(200);
+
+  std::cout<<"in control::testLEDs"<<std::endl;
+  return;
+  mainboardIO_.showChasingLight();
+
+  return;
+
   // ----------------- chasing light of GPIO ----------------------
   // change pin designation to all GPIO pins to show LEDs
   SPIBridge::PinDesignation pinDesignation[9];
@@ -245,20 +290,16 @@ void Control::testLEDs()
   // pin 1: B
   // pin 2: C
   // pin 3: SPI_Transfer (inverted)
-  // pin 4: CS1
-  // pin 5: CS2
-  // pin 6: D1
-  // pin 7: D2
-  // pin 8: PinCSOutput
+  // pin 4: NXT1
+  // pin 5: NXT2
+  // pin 6: CSMotor1
+  // pin 7: CSMotor2
+  // pin 8: CSAux
 
-  bool valueOff[9];
-  bool currentValue[9];
+  bool valueOff[9] = {SPIBridge::LogicalValue::low};
+  valueOff[PinSPI_Transfer] = SPIBridge::LogicalValue::high;
 
-  for(int i=0; i<9; i++)
-  {
-    valueOff[i] = false;
-  }
-  valueOff[PinSPI_Transfer] = true;
+  bool currentValue[9] = {SPIBridge::LogicalValue::low};
 
   for(int gpioNumber=0; gpioNumber<9; gpioNumber++)
   {
@@ -271,7 +312,7 @@ void Control::testLEDs()
     spiBridge_.setGPOutputPins(currentValue);
 
     // sleep
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(timestep);
   }
 
   initializeSPIBridge();
@@ -291,7 +332,7 @@ void Control::testLEDs()
     spiTransfer((Control::SPIComponent)(Motor0+motorNumber), buffer, sizeof(buffer));
 
     // sleep
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(timestep);
   }
 }
 

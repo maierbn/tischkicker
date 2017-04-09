@@ -23,6 +23,9 @@ IOExtender::IOExtender(Control &control, int hardwareAddress) :
   for(int i=0; i<16; i++)
     currentOutput_[i] = false;
 
+  std::cout<<"Warning: IOExtender configuration disabled!"<<std::endl;
+  return;
+
   // store on-chip configuration
   configure();
 }
@@ -135,4 +138,9 @@ void IOExtender::applyOutputValues()
   }
 
   control_.spiTransfer(Control::SPIComponent::LEDOutput, buffer, sizeof(buffer));
+}
+
+double IOExtender::maximumSPIBitrate()
+{
+  return 10.0e9;    // 10 MHz
 }

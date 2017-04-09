@@ -52,6 +52,11 @@ public:
     low = 0,
     high = 1
   };
+  enum ChipSelectValue
+  {
+    CSActive = 0,     // line at chip output is 0 => DEMUX output is 1 => ¬CS = 0 (low-active)
+    CSInactive = 1    // line at chip output is 1 => DEMUX output is 0 => ¬CS = 1 (low-active)
+  };
 
   //! set default settings values on power-up on the chip
   void setSettings(bool currentValues, PinDesignation pinDesignation[9], bool ioValue[9], bool ioDirection[9],

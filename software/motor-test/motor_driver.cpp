@@ -13,6 +13,8 @@ MotorDriver::MotorDriver(Control &control, int motorNumber) :
   control_(control),
   componentNumber_(Control::Motor0+motorNumber_)
 {
+  std::cout<<"Warning: MotorDriver configuration disabled!"<<std::endl;
+  return;
   // store on-chip configuration
   configure();
 }
@@ -483,4 +485,9 @@ void MotorDriver::moveToPosition(int position)
     <<", microStepPosition_="<<microStepPosition_<<" (="<<microStepPosition_.to_ulong()<<")"<<std::endl;
   readRegister(RegisterAddress::SR3);
   readRegister(RegisterAddress::SR4);
+}
+
+double MotorDriver::maximumSPIBitrate()
+{
+  return 1.0e9;    // 1 MHz
 }
