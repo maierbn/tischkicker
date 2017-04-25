@@ -11,9 +11,10 @@
 
 MotorDriver::MotorDriver(Control &control, int motorNumber) :
   control_(control),
-  componentNumber_(Control::Motor0+motorNumber_)
+  motorNumber_(motorNumber),
+  spiComponent_((SPIComponent)(int(SPIComponent::Motor0) + motorNumber_))
 {
-  std::cout<<"Warning: MotorDriver configuration disabled!"<<std::endl;
+  std::cout<<"Warning: MotorDriver configuration of no "<<motorNumber_<<", "<<spiComponentName[spiComponent_]<<" disabled!"<<std::endl;
   return;
   // store on-chip configuration
   configure();
@@ -166,14 +167,16 @@ void MotorDriver::setMaxCurrent(double factor)
 
 unsigned char MotorDriver::readRegister(RegisterAddress registerAddress)
 {
+  std::cout<<"MotorDriver::readRegister("<<registerAddressName[registerAddress]<<")"<<std::endl;
+
   // send command "Read"
   RegisterCommand registerCommand = RegisterCommand::Read;
   unsigned char buffer[2] = {0,0};
   buffer[0] = registerCommand | registerAddress;
   buffer[1] = 0x00;
-  control_.spiTransfer((Control::SPIComponent)componentNumber_, buffer, sizeof(buffer));
+  control_.spiTransfer(spiComponent_, buffer, sizeof(buffer));
 
-  output("Read "+std::string(registerAddressName[registerAddress]), buffer);
+  output("   Value of "+std::string(registerAddressName[registerAddress]), buffer);
 
   parseResponse(buffer[1], registerAddress);
   return buffer[1];
@@ -181,14 +184,17 @@ unsigned char MotorDriver::readRegister(RegisterAddress registerAddress)
 
 void MotorDriver::writeRegister(RegisterAddress registerAddress, unsigned char value)
 {
+  std::cout<<"MotorDriver::writeRegister("<<registerAddressName[registerAddress]<<", "<<std::bitset<8>(value)
+    <<" = "<<std::hex<<std::setfill('0')<<std::setw(2)<<int(value)<<std::dec<<")"<<std::endl;
+
   // send command "Write"
   RegisterCommand registerCommand = RegisterCommand::Write;
   unsigned char buffer[2] = {0,0};
   buffer[0] = registerCommand | registerAddress;
   buffer[1] = value;
-  control_.spiTransfer((Control::SPIComponent)componentNumber_, buffer, sizeof(buffer));
+  control_.spiTransfer(spiComponent_, buffer, sizeof(buffer));
 
-  output("Write "+std::string(registerAddressName[registerAddress]), buffer);
+  output("  Previous value of "+std::string(registerAddressName[registerAddress]), buffer);
 }
 
 void MotorDriver::output(std::string specifier, unsigned char byte[2])
@@ -205,40 +211,40 @@ void MotorDriver::output(std::string specifier, unsigned char byte[2])
 void MotorDriver::ErrorFlags::print()
 {
   if(chargePump)
-    std::cout<<"Charge Pump Failure"<<std::endl;
+    std::cout<<"  Charge Pump Failure"<<std::endl;
   if(openCoilX)
-    std::cout<<"Open Coil X"<<std::endl;
+    std::cout<<"  Open Coil X"<<std::endl;
   if(openCoilY)
-    std::cout<<"Open Coil Y"<<std::endl;
+    std::cout<<"  Open Coil Y"<<std::endl;
   if(overCurrentXNegativeBottom)
-    std::cout<<"Overcurrent X Negative Bottom\a"<<std::endl;
+    std::cout<<"  Overcurrent X Negative Bottom\a"<<std::endl;
   if(overCurrentXNegativeTop)
-    std::cout<<"Overcurrent X Negative Top\a"<<std::endl;
+    std::cout<<"  Overcurrent X Negative Top\a"<<std::endl;
   if(overCurrentXPositiveBottom)
-    std::cout<<"Overcurrent X Positive Bottom\a"<<std::endl;
+    std::cout<<"  Overcurrent X Positive Bottom\a"<<std::endl;
   if(overCurrentXPositiveTop)
-    std::cout<<"Overcurrent X Positive Top\a"<<std::endl;
+    std::cout<<"  Overcurrent X Positive Top\a"<<std::endl;
   if(overCurrentYNegativeBottom)
-    std::cout<<"Overcurrent Y Negative Bottom\a"<<std::endl;
+    std::cout<<"  Overcurrent Y Negative Bottom\a"<<std::endl;
   if(overCurrentYNegativeTop)
-    std::cout<<"Overcurrent Y Negative Top\a"<<std::endl;
+    std::cout<<"  Overcurrent Y Negative Top\a"<<std::endl;
   if(overCurrentYPositiveBottom)
-    std::cout<<"Overcurrent Y Positive Bottom\a"<<std::endl;
+    std::cout<<"  Overcurrent Y Positive Bottom\a"<<std::endl;
   if(overCurrentYPositiveTop)
-    std::cout<<"Overcurrent Y Positive Top\a"<<std::endl;
+    std::cout<<"  Overcurrent Y Positive Top\a"<<std::endl;
   if(thermalShutdown)
-    std::cout<<"Thermal Shutdown (>180°C)\a"<<std::endl;
+    std::cout<<"  Thermal Shutdown (>180°C)\a"<<std::endl;
   if(thermalWarning)
-    std::cout<<"Thermal Warning (>160°C)\a"<<std::endl;
+    std::cout<<"  Thermal Warning (>160°C)\a"<<std::endl;
   if(watchdogEvent)
-    std::cout<<"Watchdog Event"<<std::endl;
+    std::cout<<"  Watchdog Event"<<std::endl;
 
   if(!chargePump && !openCoilX && !openCoilY && !overCurrentXNegativeBottom
     && !overCurrentXNegativeTop && !overCurrentXPositiveBottom && !overCurrentXPositiveTop
     && !overCurrentYNegativeBottom && !overCurrentYNegativeTop && !overCurrentYPositiveBottom
     && !overCurrentYPositiveTop && !thermalShutdown && !thermalWarning && !watchdogEvent)
   {
-    std::cout<<"No error flags.";
+    std::cout<<"  No error flags."<<std::endl;
   }
 
   if(overCurrentXNegativeBottom || overCurrentXNegativeTop || overCurrentXPositiveBottom || overCurrentXPositiveTop
@@ -253,7 +259,7 @@ void MotorDriver::ErrorFlags::print()
 bool MotorDriver::parseResponse(unsigned char byte, RegisterAddress registerAddress)
 {
   std::cout<<std::endl;
-  std::cout<<"MotorDriver::parseResponse: register "<<registerAddressName[registerAddress]<<", byte="
+  std::cout<<"  MotorDriver::parseResponse: register "<<registerAddressName[registerAddress]<<", byte="
     <<std::hex<<std::setfill('0')<<std::setw(2)<<int(byte)<<std::dec
     <<" "<<std::bitset<8>(byte)<<std::endl;
 
@@ -268,7 +274,7 @@ bool MotorDriver::parseResponse(unsigned char byte, RegisterAddress registerAddr
   }
   if (parity)
   {
-    std::cout<<"parity mismatch in byte "<<std::hex<<std::setfill('0')<<std::setw(2)<<int(byte)<<std::dec
+    std::cout<<"  Parity mismatch in byte "<<std::hex<<std::setfill('0')<<std::setw(2)<<int(byte)<<std::dec
       <<", received parity = "<<(bool(byte & 0x80)? "1" : "0")
       <<std::endl;
     return false;
@@ -283,7 +289,7 @@ bool MotorDriver::parseResponse(unsigned char byte, RegisterAddress registerAddr
     std::bitset<1> wd(byte << 4);
     std::bitset<1> openx(byte << 3);
     std::bitset<1> openy(byte << 2);
-    std::cout<<"TW: "<<tw<<", CPFAIL: "<<cpfail<<", WD: "<<wd<<", OPENX: "<<openx<<", OPENY: "<<openy<<std::endl;
+    std::cout<<"  TW: "<<tw<<", CPFAIL: "<<cpfail<<", WD: "<<wd<<", OPENX: "<<openx<<", OPENY: "<<openy<<std::endl;
     errorFlags_.thermalWarning = tw[0];
     errorFlags_.chargePump = cpfail[0];
     errorFlags_.watchdogEvent = wd[0];
@@ -296,7 +302,7 @@ bool MotorDriver::parseResponse(unsigned char byte, RegisterAddress registerAddr
     std::bitset<1> ovcxpb(byte << 5);
     std::bitset<1> ovcxnt(byte << 4);
     std::bitset<1> ovcxnb(byte << 3);
-    std::cout<<"OVCXPT: "<<ovcxpt<<", OVCXPB: "<<ovcxpb<<", OVCXNT: "<<ovcxnt<<", OVCXNB: "<<ovcxnb<<std::endl;
+    std::cout<<"  OVCXPT: "<<ovcxpt<<", OVCXPB: "<<ovcxpb<<", OVCXNT: "<<ovcxnt<<", OVCXNB: "<<ovcxnb<<std::endl;
     errorFlags_.overCurrentXPositiveTop = ovcxpt[0];
     errorFlags_.overCurrentXPositiveBottom = ovcxpb[0];
     errorFlags_.overCurrentXNegativeTop = ovcxnt[0];
@@ -309,7 +315,7 @@ bool MotorDriver::parseResponse(unsigned char byte, RegisterAddress registerAddr
     std::bitset<1> ovcynt(byte << 4);
     std::bitset<1> ovcynb(byte << 3);
     std::bitset<1> tsd(byte << 2);
-    std::cout<<"OVCYPT: "<<ovcypt<<", OVCYPB: "<<ovcypb<<", OVCYNT: "<<ovcynt<<", OVCYNB: "<<ovcynb<<", TSD: "<<tsd<<std::endl;
+    std::cout<<"  OVCYPT: "<<ovcypt<<", OVCYPB: "<<ovcypb<<", OVCYNT: "<<ovcynt<<", OVCYNB: "<<ovcynb<<", TSD: "<<tsd<<std::endl;
     errorFlags_.overCurrentYPositiveTop = ovcypt[0];
     errorFlags_.overCurrentYPositiveBottom = ovcypb[0];
     errorFlags_.overCurrentYNegativeTop = ovcynt[0];
@@ -326,7 +332,7 @@ bool MotorDriver::parseResponse(unsigned char byte, RegisterAddress registerAddr
       microStepPosition_[i] = msp[position];
       position++;
     }
-    std::cout<<"MSP[8:2]: "<<msp<<", micro step position: "<<microStepPosition_<<std::endl;
+    std::cout<<"  MSP[8:2]: "<<msp<<", micro step position: "<<microStepPosition_<<std::endl;
   }
   else if(registerAddress == RegisterAddress::SR4)
   {
@@ -338,14 +344,14 @@ bool MotorDriver::parseResponse(unsigned char byte, RegisterAddress registerAddr
       microStepPosition_[i] = msp[position];
       position++;
     }
-    std::cout<<"MSP[6:0]: "<<msp<<", micro step position: "<<microStepPosition_<<std::endl;
+    std::cout<<"  MSP[6:0]: "<<msp<<", micro step position: "<<microStepPosition_<<std::endl;
   }
   // control registers (read/write access)
   else if(registerAddress == RegisterAddress::CR0)
   {
     std::bitset<3> sm(byte << 5);
     std::bitset<5> cur(byte);
-    std::cout<<"CUR: "<<cur.to_ulong()<<", SM: "<<sm<<std::endl;
+    std::cout<<"  CUR: "<<cur.to_ulong()<<", SM: "<<sm<<std::endl;
   }
   else if(registerAddress == RegisterAddress::CR1)
   {
@@ -354,7 +360,7 @@ bool MotorDriver::parseResponse(unsigned char byte, RegisterAddress registerAddr
     std::bitset<1> pwmf(byte << 3);
     std::bitset<1> pwmj(byte << 2);
     std::bitset<2> emc(byte);
-    std::cout<<"DIRCTRL: "<<dirctrl<<", NXTP: "<<nxtp<<", PWMF: "<<pwmf<<", PWMJ: "<<pwmj<<", EMC: "<<emc<<std::endl;
+    std::cout<<"  DIRCTRL: "<<dirctrl<<", NXTP: "<<nxtp<<", PWMF: "<<pwmf<<", PWMJ: "<<pwmj<<", EMC: "<<emc<<std::endl;
   }
   else if(registerAddress == RegisterAddress::CR2)
   {
@@ -362,12 +368,12 @@ bool MotorDriver::parseResponse(unsigned char byte, RegisterAddress registerAddr
     std::bitset<1> slp(byte << 6);
     std::bitset<1> slag(byte << 5);
     std::bitset<1> slat(byte << 4);
-    std::cout<<"MOTEN: "<<moten<<", SLP: "<<slp<<", SLAG: "<<slag<<", SLAT: "<<slat<<std::endl;
+    std::cout<<"  MOTEN: "<<moten<<", SLP: "<<slp<<", SLAG: "<<slag<<", SLAT: "<<slat<<std::endl;
   }
   else if(registerAddress == RegisterAddress::CR3)
   {
     std::bitset<3> esm(byte);
-    std::cout<<"ESM: "<<esm<<std::endl;
+    std::cout<<"  ESM: "<<esm<<std::endl;
   }
   else if(registerAddress == RegisterAddress::WR)
   {
@@ -375,7 +381,7 @@ bool MotorDriver::parseResponse(unsigned char byte, RegisterAddress registerAddr
   }
   else
   {
-    std::cout<<"Error in MotorDriver::parseResponse: invalid register address "
+    std::cout<<"  Error in MotorDriver::parseResponse: invalid register address "
       <<std::hex<<registerAddress<<std::endl;
   }
 
@@ -384,14 +390,19 @@ bool MotorDriver::parseResponse(unsigned char byte, RegisterAddress registerAddr
 
 void MotorDriver::debugMotor()
 {
-  std::cout<<"MotorDriver::debugMotor"<<std::endl;
+  std::cout<<std::endl;
+  std::cout<<"======================="<<std::endl;
+  std::cout<<"MotorDriver::debugMotor, spiComponent: "<<spiComponentName[spiComponent_]<<std::endl;
 
   // send command "Write CR0"
   writeRegister(RegisterAddress::CR0, (unsigned char)(std::bitset<8>("10100101").to_ulong()));
 
+  control_.collectAndPrintSettings();
+
   // send command "Read CR0"
   readRegister(RegisterAddress::CR0);
 
+  control_.collectAndPrintSettings();
   // send command "Read SR0"
   readRegister(RegisterAddress::SR0);
 }
@@ -487,7 +498,9 @@ void MotorDriver::moveToPosition(int position)
   readRegister(RegisterAddress::SR4);
 }
 
-double MotorDriver::maximumSPIBitrate()
+uint32_t MotorDriver::maximumSPIBitrate()
 {
-  return 1.0e9;    // 1 MHz
+  //return 1.0e5;    // 100 kHz
+  return 1.0e3;    // 1 kHz
+  //return 1.0e6;    // 1 MHz
 }

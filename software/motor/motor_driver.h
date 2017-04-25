@@ -3,6 +3,8 @@
 #include <iostream>
 #include <bitset>
 
+#include "spi_component.h"
+
 class Control;
 
 /** A class that encapsules the stepper motor driver for motor motorNumber
@@ -12,7 +14,7 @@ class MotorDriver
 {
 public:
 
-  MotorDriver(Control &control, int motorNumber=0);
+  MotorDriver(Control &control, int motorNumber);
 
   ///! test function to check if motor driver chip works as expected
   void debugMotor();
@@ -21,7 +23,7 @@ public:
   void moveToPosition(int position);
 
   ///! returns the maximum bitrate that is possible for SPI communication
-  static double maximumSPIBitrate();
+  static uint32_t maximumSPIBitrate();
 
 private:
 
@@ -108,7 +110,7 @@ private:
 
   Control &control_;   ///< the control object that has access to all components
   int motorNumber_;  ///< the number of the motor (0-15)
-  int componentNumber_;   ///< the SPI component number of this chip
+  SPIComponent spiComponent_;   ///< the SPI component number of this chip
   std::bitset<9> microStepPosition_;
   int currentPosition_;
 };

@@ -29,8 +29,8 @@ public:
   };
   enum GPIODirection
   {
-    Output = 1,
-    Input = 0
+    Output = 0,
+    Input = 1
   };
   enum InterruptPinMode
   {

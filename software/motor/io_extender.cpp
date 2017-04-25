@@ -8,6 +8,7 @@
 #include <iomanip>
 
 #include "control.h"
+#include "spi_component.h"
 
 IOExtender::IOExtender(Control &control, int hardwareAddress) :
   control_(control),
@@ -68,7 +69,7 @@ void IOExtender::configure()
   buffer[2] = (bank? 0x80: 0) | (mirror? 0x40: 0) | (seqop? 0x20: 0) | (disslw? 0x10: 0)
    | (haen? 0x08: 0) | (odr? 0x04: 0) | (intpol? 0x02: 0);
 
-  control_.spiTransfer(Control::SPIComponent::LEDOutput, buffer, sizeof(buffer));
+  control_.spiTransfer(SPIComponent::LEDOutput, buffer, sizeof(buffer));
 }
 
 void IOExtender::showChasingLight()
@@ -137,10 +138,10 @@ void IOExtender::applyOutputValues()
     mask <<= 1;
   }
 
-  control_.spiTransfer(Control::SPIComponent::LEDOutput, buffer, sizeof(buffer));
+  control_.spiTransfer(SPIComponent::LEDOutput, buffer, sizeof(buffer));
 }
 
-double IOExtender::maximumSPIBitrate()
+uint32_t IOExtender::maximumSPIBitrate()
 {
-  return 10.0e9;    // 10 MHz
+  return 10e6;    // 10 MHz
 }

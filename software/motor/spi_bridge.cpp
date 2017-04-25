@@ -3,6 +3,7 @@
 #include "hidapi.h"
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <cstring>
 #include <chrono>
@@ -232,6 +233,8 @@ void SPIBridge::setTransferSettings(bool currentValues, uint32_t bitRate, bool i
   if(DEBUG)
     std::cout << "SPIBridge::setTransferSettings(currentValues=" << std::boolalpha << currentValues << ")" << std::endl;
 
+  std::cout<<"SPIBridge::setTransferSettings(currentValues=" << std::boolalpha << currentValues << "), set bitRate: "<<bitRate<<std::endl;
+
   for(;;)
   {
     //initialize buffer to 0
@@ -268,6 +271,9 @@ void SPIBridge::setTransferSettings(bool currentValues, uint32_t bitRate, bool i
     buffer[5] = bytes[1];
     buffer[6] = bytes[2];
     buffer[7] = bytes[3];   // msbyte
+
+    std::cout<<"send bitRate bytes: "<<std::hex<<std::setfill('0')<<std::setw(2)
+      <<int(buffer[7])<<","<<std::setw(2)<<int(buffer[6])<<","<<std::setw(2)<<int(buffer[5])<<","<<std::setw(2)<<int(buffer[4])<<std::dec<<std::endl;
 
     // bytes 8 and 9: Idle Chip Select Value
     char mask = 0x01;
@@ -579,8 +585,12 @@ void SPIBridge::getTransferSettings(bool currentValues)
 	};
 
 	// bytes 4 to 7: bit rate
+    std::cout<<"SPIBridge::getTransferSettings(currentValues=" << std::boolalpha << currentValues << ")"
+      <<" recv bitRate bytes: "<<std::hex<<std::setfill('0')<<std::setw(2)
+      <<int(buffer[7])<<","<<std::setw(2)<<int(buffer[6])<<","<<std::setw(2)<<int(buffer[5])<<","<<std::setw(2)<<int(buffer[4])<<std::dec;
 	memcpy(b, buffer+4, 4);
 	chipSettings->bitRate = int32;
+	std::cout<<" = ("<<int(int32)<<")"<<std::endl;
 
 	// bytes 8 and 9: idle chip select value
 	char mask = 0x01;
@@ -1014,10 +1024,10 @@ void SPIBridge::spiTransfer(unsigned char *spiSendBuffer, unsigned char *spiRecv
 {
   if(DEBUG || 1)
   {
-    std::cout << "SPIBridge::spiTransfer of " << length << " bytes (hex): ";
+    std::cout << "SPIBridge::spiTransfer of " << length << " bytes (hex): "<<std::hex;
     for(int i=0; i<length; i++)
     {
-      std::cout<<std::hex<<int(spiSendBuffer[i])<<" ";
+      std::cout<<std::setfill('0')<<std::setw(2)<<int(spiSendBuffer[i])<<" ";
     }
     std::cout<<std::dec<<std::endl;
   }
@@ -1249,7 +1259,7 @@ void SPIBridge::outputSettings()
     <<"I/O Direction:    ";
   for(int i=0; i<9; i++)
   {
-    std::cout<<i<<":"<<(powerUpChipSettings_.ioDirection[i]? "in" : "out")<<" ";
+    std::cout<<i<<":"<<(powerUpChipSettings_.ioDirection[i] == GPIODirection::Input? "in" : "out")<<" ";
   }
   std::cout<<std::endl
     <<"enableRemoteWakeUp:   "<<std::boolalpha<<powerUpChipSettings_.enableRemoteWakeUp<<std::endl
@@ -1283,8 +1293,16 @@ void SPIBridge::outputSettings()
     std::cout<<" invalid ("<<int(powerUpChipSettings_.interruptPinMode)<<")"<<std::endl;
   }
   std::cout<<"enableSPIBusRelease:  "<<std::boolalpha<<powerUpChipSettings_.enableSPIBusRelease<<std::endl;
-  std::cout<<"bitRate:              "<<powerUpChipSettings_.bitRate<<std::endl
-    <<"idleChipSelect:   ";
+  std::cout<<"bitRate:              "<<powerUpChipSettings_.bitRate;
+  if(powerUpChipSettings_.bitRate < 1000000)
+  {
+    std::cout<<" ("<<powerUpChipSettings_.bitRate/1000.<<" kHz)"<<std::endl;
+  }
+  else
+  {
+    std::cout<<" ("<<powerUpChipSettings_.bitRate/1000000.<<" MHz)"<<std::endl;
+  }
+  std::cout<<"idleChipSelect:   ";
   for(int i=0; i<9; i++)
   {
     std::cout<<i<<":"<<int(powerUpChipSettings_.idleChipSelect[i])<<" ";
@@ -1329,7 +1347,7 @@ void SPIBridge::outputSettings()
     <<"I/O Direction:    ";
   for(int i=0; i<9; i++)
   {
-    std::cout<<i<<":"<<(currentChipSettings_.ioDirection[i]? "in" : "out")<<" ";
+    std::cout<<i<<":"<<(currentChipSettings_.ioDirection[i] == GPIODirection::Input? "in" : "out")<<" ";
   }
   std::cout<<std::endl
     <<"enableRemoteWakeUp:   "<<std::boolalpha<<currentChipSettings_.enableRemoteWakeUp<<std::endl
@@ -1363,8 +1381,16 @@ void SPIBridge::outputSettings()
     std::cout<<" invalid ("<<int(currentChipSettings_.interruptPinMode)<<")"<<std::endl;
   }
   std::cout<<"enableSPIBusRelease:  "<<std::boolalpha<<currentChipSettings_.enableSPIBusRelease<<std::endl;
-  std::cout<<"bitRate:              "<<currentChipSettings_.bitRate<<std::endl
-    <<"idleChipSelect:   ";
+  std::cout<<"bitRate:              "<<currentChipSettings_.bitRate;
+  if(currentChipSettings_.bitRate < 1000000)
+  {
+    std::cout<<" ("<<currentChipSettings_.bitRate/1000.<<" kHz)"<<std::endl;
+  }
+  else
+  {
+    std::cout<<" ("<<currentChipSettings_.bitRate/1000000.<<" MHz)"<<std::endl;
+  }
+  std::cout<<"idleChipSelect:   ";
   for(int i=0; i<9; i++)
   {
     std::cout<<i<<":"<<int(currentChipSettings_.idleChipSelect[i])<<" ";

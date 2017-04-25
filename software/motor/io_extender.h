@@ -27,7 +27,7 @@ public:
   void applyOutputValues();
 
   ///! returns the maximum bitrate that is possible for SPI communication
-  static double maximumSPIBitrate();
+  static uint32_t maximumSPIBitrate();
 
 private:
 

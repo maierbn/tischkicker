@@ -27,6 +27,7 @@
 		<Unit filename="motor_driver.h" />
 		<Unit filename="spi_bridge.cpp" />
 		<Unit filename="spi_bridge.h" />
+		<Unit filename="spi_component.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />

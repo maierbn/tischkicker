@@ -16,6 +16,7 @@ MotorDriver::MotorDriver(SPIBridge &spiBridge, int chipSelectNumber) :
 
 void MotorDriver::configureSPIBridge()
 {
+  std::cout<<"Configure SPI Bridge for MotorDriver "<<chipSelectNumber_<<std::endl;
   spiBridge_.getAllSettings();
 
   spiBridge_.setManufacturerName(L"Benni Maier");
@@ -201,56 +202,62 @@ void MotorDriver::debugMotor()
 
 void MotorDriver::debugChasingLight()
 {
-  spiBridge_.getAllSettings();
-  spiBridge_.outputSettings();
-
-  spiBridge_.setManufacturerName(L"Benni Maier");
-  spiBridge_.setProductName(L"MCP2210 USB to SPI Master");
+  std::cout<<std::endl;
+  std::cout<<"======================"<<std::endl;
+  std::cout<<"MotorDriver::debugChasingLight"<<std::endl;
 
   SPIBridge::PinDesignation pinDesignation[9];
-  pinDesignation[0] = SPIBridge::PinDesignation::ChipSelect;
+  pinDesignation[0] = SPIBridge::PinDesignation::GPIO;
   pinDesignation[1] = SPIBridge::PinDesignation::GPIO;
   pinDesignation[2] = SPIBridge::PinDesignation::GPIO;
   pinDesignation[3] = SPIBridge::PinDesignation::GPIO;
   pinDesignation[4] = SPIBridge::PinDesignation::GPIO;
   pinDesignation[5] = SPIBridge::PinDesignation::GPIO;
-  pinDesignation[6] = SPIBridge::PinDesignation::DedicatedFunction;
-  pinDesignation[7] = SPIBridge::PinDesignation::DedicatedFunction;
-  pinDesignation[8] = SPIBridge::PinDesignation::DedicatedFunction;
+  pinDesignation[6] = SPIBridge::PinDesignation::GPIO;
+  pinDesignation[7] = SPIBridge::PinDesignation::GPIO;
+  pinDesignation[8] = SPIBridge::PinDesignation::GPIO;
 
-  bool ioValue[9];
+  bool ioValue[9], ioValueOff[9];
   bool ioDirection[9];
   for(int i=0; i<9; i++)
   {
     ioValue[i] = 0;
     ioDirection[i] = 0;
+    ioValueOff[i] = 0;
   }
+  ioValueOff[3] = 1;
+  ioValueOff[8] = 1;
 
   spiBridge_.setSettings(true, pinDesignation, ioValue, ioDirection, true, SPIBridge::InterruptPinMode::noInterruptCounting, false);
   spiBridge_.outputSettings();
 
-  std::cout<<"switch on GP0 to GP5"<<std::endl;
-  //spiBridge.setGPOutputPin(0, 1);
-  spiBridge_.setGPOutputPin(1, 1);
-  spiBridge_.setGPOutputPin(2, 1);
-  spiBridge_.setGPOutputPin(3, 1);
-  spiBridge_.setGPOutputPin(4, 1);
-  spiBridge_.setGPOutputPin(5, 1);
+  std::cout<<"switch all off"<<std::endl;
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  for(int i=0; i<9; i++)
+    spiBridge_.setGPOutputPin(i, ioValueOff[i]);
+
+
+
+  std::cout<<"switch on 1"<<std::endl;
+  spiBridge_.setGPOutputPin(1, !ioValueOff[1]);
+  spiBridge_.setGPOutputPin(0, !ioValueOff[0]);
+  std::this_thread::sleep_for(std::chrono::milliseconds(2000000));
+
+  //exit(0);
 
   std::cout<<"start moving light"<<std::endl;
 
   // moving light
   for(int i=0; ; i++)
   {
-    if(i == 6)
+    if(i == 9)
       i=0;
-    for(int j=1; j<6; j++)
+    std::cout<<"i = "<<i<<std::endl;
+    for(int j=0; j<9; j++)
     {
-      spiBridge_.setGPOutputPin(j, i==j);
+      spiBridge_.setGPOutputPin(j, (i==j? !ioValueOff[j] : ioValueOff[j]));
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   }
 
