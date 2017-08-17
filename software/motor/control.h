@@ -1,12 +1,15 @@
 #pragma once
 
+#include <chrono>
+#include <functional>
+
 #include "spi_bridge.h"
 #include "io_extender.h"
 #include "motor_driver.h"
 #include "analog_digital_converter.h"
 #include "spi_component.h"
 
-/** The main class that controls all components of the tischkicker
+/** The main class that controls all components
 */
 class Control
 {
@@ -67,5 +70,10 @@ private:
   SPIComponent currentlySelectedComponent_ = None;   ///< the component to which spiBridge_ with current configuration can send data
   int currentSPITransferLength_ = 0;
   int SPIChipSelectAddress_ = 0;   ///< the currently set values of lines C,B,A
+  uint32_t bitRate_;      ///< the bit rate with which the chip communicates over SPI
+
+  bool idleChipSelect_[9];    ///< logical values of the chip select lines when a chip is not selected
+  bool activeChipSelect_[9]; ///< logical values of the chip select lines when a chip is selected
+
 };
 

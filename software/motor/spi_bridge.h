@@ -75,6 +75,9 @@ public:
   //! set the product string
   void setProductName(std::wstring productName);
 
+  //! set the current that can be drawn from the usb power line
+  void setCurrentAmountFromHost(int currentAmountFromHost);
+
   //! retrieve the power-up transfer settings from the chip and store them in currentChipSettings_
   //! @param currentValues: true=the currently used values in RAM should be retrieved,
   //!                       false=the default values in NVRAM should be retrieved
@@ -140,6 +143,9 @@ private:
   //! wait for HIDs to enumerate (blocking) and open first device as hidDevice_
   void initDevice();
 
+  //! closes and reopens the device handle
+  void reconnect();
+
 
   /** All settings that are stored on the chip */
   struct ChipSettings
@@ -177,5 +183,6 @@ private:
   chipUSBSettings;
 
 	hid_device *hidDevice_ = NULL;    ///< the handle of the interfaced HID of hidapi
+	std::string currentDevicePath_;   ///< the path of the currently opened HID device (e.g. /dev/hidraw0)
 	unsigned char buffer[1024];               ///< a binary buffer to be used for sending and receiving
 };

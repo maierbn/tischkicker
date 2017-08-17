@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include "spi_component.h"
 
 class Control;
 
@@ -9,7 +10,7 @@ class Control;
 class IOExtender
 {
 public:
-  IOExtender(Control &control, int hardwareAddress=0);
+  IOExtender(Control &control, SPIComponent spiComponent, int hardwareAddress=0);
 
   ///! drive a chasing light
   void showChasingLight();
@@ -26,8 +27,19 @@ public:
   ///! set the values of the LEDs to those previously set by setOutputCached
   void applyOutputValues();
 
+  ///! read all input values in GPIO A0:8 and B0:8, return as 16 bits
+  uint16_t readInputValues(bool debug=false);
+
   ///! returns the maximum bitrate that is possible for SPI communication
   static uint32_t maximumSPIBitrate();
+
+  void debug();
+
+  ///! retrieves all current register values from the IC and writes them to std output
+  void outputAllSettings(bool withLegend=true);
+
+  ///! if the chip is not yet configured, run configure
+  void assertConfigured();
 
 private:
 
@@ -67,13 +79,32 @@ private:
     write = 0x00,   // Write command mask: 0000 0000
   };
 
+  enum IODirection
+  {
+    out = 0,
+    in = 1
+  };
+
   ///! modify the on-chip configuration
-  void configure();
+  void configure(bool debug=false);
+
+  ///! read the value of a register
+  unsigned char readRegister(RegisterAddress registerAddress, bool debug=false);
+
+  ///! write a value to a register
+  void writeRegister(RegisterAddress registerAddress, unsigned char value, bool debug=false);
 
   bool currentOutput_[16];  ///< current state of the LEDs (true=on, false=off)
 
   Control &control_;   ///< the control object that has access to all components
+  SPIComponent spiComponent_;	///< the SPI component of control
   int hardwareAddress_;    ///< the hardware address of the chip, given by the externally biased A2,A1 and A0 pins
   unsigned char deviceOpcode_;    ///< the first byte to send in a SPI transfer
+  bool configured_;         ///< if the settings were initially stored on the chip, this has to be done after the constructor, but before use of the chip
+
+  // define I/O direction
+  IODirection ioDirectionA_[8];
+  IODirection ioDirectionB_[8];
+
 };
 
