@@ -184,5 +184,5 @@ private:
 
 	hid_device *hidDevice_ = NULL;    ///< the handle of the interfaced HID of hidapi
 	std::string currentDevicePath_;   ///< the path of the currently opened HID device (e.g. /dev/hidraw0)
-	unsigned char buffer[1024];               ///< a binary buffer to be used for sending and receiving
+	unsigned char buffer_[1024];               ///< a binary buffer to be used for sending and receiving
 };

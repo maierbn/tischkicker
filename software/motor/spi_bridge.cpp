@@ -149,78 +149,78 @@ void SPIBridge::setSettings(bool currentValues, PinDesignation pinDesignation[9]
     std::cout << "SPIBridge::setSettings(currentValues=" << std::boolalpha << currentValues << ")" << std::endl;
 
   //initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  memset(buffer_, 0x00, 64);
 
   ChipSettings *chipSettings;
 
   //fill in command
   if(currentValues)
   {
-    buffer[0] = 0x21;   // command code for "Get (VM) GPIO Current Chip Settings"
-    buffer[1] = 0x00;   // reserved
-    buffer[2] = 0x00;   // reserved
-    buffer[3] = 0x00;   // reserved
+    buffer_[0] = 0x21;   // command code for "Get (VM) GPIO Current Chip Settings"
+    buffer_[1] = 0x00;   // reserved
+    buffer_[2] = 0x00;   // reserved
+    buffer_[3] = 0x00;   // reserved
     chipSettings = &currentChipSettings_;
   }
   else
   {
-    buffer[0] = 0x60;   // command code for "Set Chip NVRAM Parameters"
-    buffer[1] = 0x20;   // sub-command code for "Set Chip Settings Power-up Default"
-    buffer[2] = 0x00;   // reserved
-    buffer[3] = 0x00;   // reserved
+    buffer_[0] = 0x60;   // command code for "Set Chip NVRAM Parameters"
+    buffer_[1] = 0x20;   // sub-command code for "Set Chip Settings Power-up Default"
+    buffer_[2] = 0x00;   // reserved
+    buffer_[3] = 0x00;   // reserved
     chipSettings = &powerUpChipSettings_;
   }
 
   // bytes 4 to 12: GP0-GP8 Pin Designation
   for(int i=0; i<9; i++)
   {
-    buffer[4+i] = pinDesignation[i];
+    buffer_[4+i] = pinDesignation[i];
   }
 
   // bytes 13 and 14: Default GPIO Output
   char mask = 0x01;
   for(int i=0; i<8; i++)
   {
-    buffer[13] |= (ioValue[i] * mask);
+    buffer_[13] |= (ioValue[i] * mask);
     mask <<= 1;
   }
-  buffer[14] |= ioValue[8] * 0x01;
+  buffer_[14] |= ioValue[8] * 0x01;
 
   // bytes 15 and 16: Default GPIO Direction
   mask = 0x01;
   for(int i=0; i<8; i++)
   {
-    buffer[15] |= (ioDirection[i] * mask);
+    buffer_[15] |= (ioDirection[i] * mask);
     mask <<= 1;
   }
-  buffer[16] |= ioDirection[8] * 0x01;
+  buffer_[16] |= ioDirection[8] * 0x01;
 
   // byte 17: other chip settings
-  buffer[17] |= enableRemoteWakeUp * 0x10;
-  buffer[17] |= (interruptPinMode << 1);
-  buffer[17] |= (!enableSPIBusRelease) * 0x01;
+  buffer_[17] |= enableRemoteWakeUp * 0x10;
+  buffer_[17] |= (interruptPinMode << 1);
+  buffer_[17] |= (!enableSPIBusRelease) * 0x01;
 
-  buffer[18] = 0x00;    // no password protection of chip settings
+  buffer_[18] = 0x00;    // no password protection of chip settings
   // bytes 19 to 26: new password characters (not used here)
   // bytes 27 to 63: reserved (fill with 0x00)
 
   // send command
-	hid_write(hidDevice_, buffer, 64);
+	hid_write(hidDevice_, buffer_, 64);
 
 	// receive response (blocking)
-	hid_read(hidDevice_, buffer, 64);
+	hid_read(hidDevice_, buffer_, 64);
 
 	// parse response (Response 1 in data sheet)
 	if(currentValues)
 	{
-    assert(buffer[0] == 0x21);  // byte 0: echos back the given command code
-    assert(buffer[1] == 0x00);  // byte 1: settings written
+    assert(buffer_[0] == 0x21);  // byte 0: echos back the given command code
+    assert(buffer_[1] == 0x00);  // byte 1: settings written
 	}
 	else
 	{
-    assert(buffer[0] == 0x60);  // byte 0: echos back the given command code
-    assert(buffer[1] == 0x00);  // byte 1: settings written
-    assert(buffer[2] == 0x20);  // byte 2: sub-command echoed back
+    assert(buffer_[0] == 0x60);  // byte 0: echos back the given command code
+    assert(buffer_[1] == 0x00);  // byte 1: settings written
+    assert(buffer_[2] == 0x20);  // byte 2: sub-command echoed back
   }
 
 	// copy settings to currentChipSettings_
@@ -248,25 +248,25 @@ void SPIBridge::setTransferSettings(bool currentValues, uint32_t bitRate, bool i
   for(; nTries < 10; nTries++)
   {
     //initialize buffer to 0
-    memset(buffer, 0x00, 64);
+    memset(buffer_, 0x00, 64);
 
     ChipSettings *chipSettings;
 
     //fill in command
     if(currentValues)
     {
-      buffer[0] = 0x40;   // command code for "Set (VM) SPI Transfer Settings"
-      buffer[1] = 0x00;   // reserved
-      buffer[2] = 0x00;   // reserved
-      buffer[3] = 0x00;   // reserved
+      buffer_[0] = 0x40;   // command code for "Set (VM) SPI Transfer Settings"
+      buffer_[1] = 0x00;   // reserved
+      buffer_[2] = 0x00;   // reserved
+      buffer_[3] = 0x00;   // reserved
       chipSettings = &currentChipSettings_;
     }
     else
     {
-      buffer[0] = 0x60;   // command code for "Set Chip NVRAM Parameters"
-      buffer[1] = 0x10;   // sub-command code for "Set SPI Power-up Transfer Settings"
-      buffer[2] = 0x00;   // reserved
-      buffer[3] = 0x00;   // reserved
+      buffer_[0] = 0x60;   // command code for "Set Chip NVRAM Parameters"
+      buffer_[1] = 0x10;   // sub-command code for "Set SPI Power-up Transfer Settings"
+      buffer_[2] = 0x00;   // reserved
+      buffer_[3] = 0x00;   // reserved
       chipSettings = &powerUpChipSettings_;
     }
 
@@ -277,32 +277,32 @@ void SPIBridge::setTransferSettings(bool currentValues, uint32_t bitRate, bool i
 
     //example: 12000000 = 0x00B71B00, buffer[5] = 0x1B = 27, buffer[6] = 0xB7
     uint = bitRate;
-    buffer[4] = bytes[0];   // lsbyte
-    buffer[5] = bytes[1];
-    buffer[6] = bytes[2];
-    buffer[7] = bytes[3];   // msbyte
+    buffer_[4] = bytes[0];   // lsbyte
+    buffer_[5] = bytes[1];
+    buffer_[6] = bytes[2];
+    buffer_[7] = bytes[3];   // msbyte
 
     if(DEBUG)
       std::cout<<"send bitRate bytes: "<<std::hex<<std::setfill('0')<<std::setw(2)
-        <<int(buffer[7])<<","<<std::setw(2)<<int(buffer[6])<<","<<std::setw(2)<<int(buffer[5])<<","<<std::setw(2)<<int(buffer[4])<<std::dec<<std::endl;
+        <<int(buffer_[7])<<","<<std::setw(2)<<int(buffer_[6])<<","<<std::setw(2)<<int(buffer_[5])<<","<<std::setw(2)<<int(buffer_[4])<<std::dec<<std::endl;
 
     // bytes 8 and 9: Idle Chip Select Value
     char mask = 0x01;
     for(int i=0; i<8; i++)
     {
-      buffer[8] |= (idleChipSelect[i] * mask);
+      buffer_[8] |= (idleChipSelect[i] * mask);
       mask <<= 1;
     }
-    buffer[9] |= idleChipSelect[8] * 0x01;
+    buffer_[9] |= idleChipSelect[8] * 0x01;
 
     // bytes 10 and 11: Active Chip Select Value
     mask = 0x01;
     for(int i=0; i<8; i++)
     {
-      buffer[10] |= (activeChipSelect[i] * mask);
+      buffer_[10] |= (activeChipSelect[i] * mask);
       mask <<= 1;
     }
-    buffer[11] |= activeChipSelect[8] * 0x01;
+    buffer_[11] |= activeChipSelect[8] * 0x01;
 
     // byte 12 and 13: chip select to data delay (quanta of 100us) as 16-bit value
     union {
@@ -311,47 +311,50 @@ void SPIBridge::setTransferSettings(bool currentValues, uint32_t bitRate, bool i
     };
     int16 = uint16_t(delayCSToData / 100.0e-6);
 
-    buffer[12] = b[0];
-    buffer[13] = b[1];
+    buffer_[12] = b[0];
+    buffer_[13] = b[1];
 
     // byte 14 and 15: last data byte to CS
     int16 = uint16_t(delayLastByteToCS / 100.0e-6);
-    buffer[14] = b[0];
-    buffer[15] = b[1];
+    buffer_[14] = b[0];
+    buffer_[15] = b[1];
 
     // byte 16 and 17: delay between subsequent data bytes
     int16 = uint16_t(delayDataToData / 100.0e-6);
-    buffer[16] = b[0];
-    buffer[17] = b[1];
+    buffer_[16] = b[0];
+    buffer_[17] = b[1];
 
     // byte 18 and 19: number of bytes to transfer per SPI Transaction
     int16 = spiTransactionLength;
-    buffer[18] = b[0];
-    buffer[19] = b[1];
+    buffer_[18] = b[0];
+    buffer_[19] = b[1];
 
-    buffer[20] = spiMode;
+    buffer_[20] = spiMode;
     // bytes 21 to 63: reserved (fill with 0x00)
 
     // send command
-    hid_write(hidDevice_, buffer, 64);
+    hid_write(hidDevice_, buffer_, 64);
 
-    //std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     // receive response (blocking)
-    hid_read(hidDevice_, buffer, 64);
+    hid_read(hidDevice_, buffer_, 64);
 
     // parse response (Response 2 or 3 in data sheet)
     if(currentValues)
     {
-      assert(buffer[0] == 0x40);
+      assert(buffer_[0] == 0x40);
     }
     else
     {
-      assert(buffer[0] == 0x60);  // byte 0: echos back the given command code
-      assert(buffer[2] == 0x10);  // byte 2: sub-command echoed back
+      assert(buffer_[0] == 0x60);  // byte 0: echos back the given command code
+      assert(buffer_[2] == 0x10);  // byte 2: sub-command echoed back
     }
 
-    if(buffer[1] == 0x00) // settings written
+    if(buffer_[1] == 0x00) // settings written
     {
       if(DEBUG)
         std::cout<<"Settings written"<<std::endl;
@@ -370,7 +373,7 @@ void SPIBridge::setTransferSettings(bool currentValues, uint32_t bitRate, bool i
       chipSettings->spiMode = spiMode;
       break;
     }
-    else if(buffer[1] == 0xF8)    // settings not written, USB Transfer in Progress
+    else if(buffer_[1] == 0xF8)    // settings not written, USB Transfer in Progress
     {
       if(DEBUG)
         std::cout<<"Settings not written, USB Transfer in Progress, wait and resend command"<<std::endl;
@@ -393,13 +396,13 @@ void SPIBridge::setUSBKeyParameters(int16_t vendorId, int16_t productId, bool ho
     std::cout << "SPIBridge::setUSBKeyParameters" << std::endl;
 
   // initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  memset(buffer_, 0x00, 64);
 
   // fill in command
-  buffer[0] = 0x60;   // command code for "Set Chip NVRAM Parameters"
-  buffer[1] = 0x30;   // sub-command code for "Set USB Power-up Key Parameters"
-  buffer[2] = 0x00;   // reserved
-  buffer[3] = 0x00;   // reserved
+  buffer_[0] = 0x60;   // command code for "Set Chip NVRAM Parameters"
+  buffer_[1] = 0x30;   // sub-command code for "Set USB Power-up Key Parameters"
+  buffer_[2] = 0x00;   // reserved
+  buffer_[3] = 0x00;   // reserved
 
   union {
     uint16_t int16;
@@ -408,34 +411,34 @@ void SPIBridge::setUSBKeyParameters(int16_t vendorId, int16_t productId, bool ho
 
   // bytes 4 and 5: vendor id
   int16 = vendorId;
-  buffer[4] = b[0];
-  buffer[5] = b[1];
+  buffer_[4] = b[0];
+  buffer_[5] = b[1];
 
   // bytes 6 and 7: product id
   int16 = productId;
-  buffer[6] = b[0];
-  buffer[7] = b[1];
+  buffer_[6] = b[0];
+  buffer_[7] = b[1];
 
   // byte 8: chip power option
-  buffer[8] |= hostPowered * 0x128;     // bit 7: host powered
-  buffer[8] |= (!hostPowered) * 0x64;   // bit 6: self powered
-  buffer[8] |= remoteWakeUpCapable * 0x32; // bit 5: remote wake-up capable
+  buffer_[8] |= hostPowered * 0x80;         // bit 7: host powered
+  buffer_[8] |= (!hostPowered) * 0x40;      // bit 6: self powered
+  buffer_[8] |= remoteWakeUpCapable * 0x10; // bit 5: remote wake-up capable
 
   // byte 9: requested current amount from USB host (quanta of 2 mA)
-  buffer[9] = std::min(currentAmountFromHost, 510) / 2;
+  buffer_[9] = std::min(currentAmountFromHost, 510) / 2;
 
   // bytes 10 to 63: reserved (fill with 0x00)
 
   // send command
-	hid_write(hidDevice_, buffer, 64);
+	hid_write(hidDevice_, buffer_, 64);
 
 	// receive response (blocking)
-	hid_read(hidDevice_, buffer, 64);
+	hid_read(hidDevice_, buffer_, 64);
 
 	// parse response (Response 2 in data sheet)
-	assert(buffer[0] == 0x60);  // byte 0: echos back the given command code
-	assert(buffer[1] == 0x00);  // byte 1: settings written
-	assert(buffer[2] == 0x30);  // byte 2: sub-command echoed back
+	assert(buffer_[0] == 0x60);  // byte 0: echos back the given command code
+	assert(buffer_[1] == 0x00);  // byte 1: settings written
+	assert(buffer_[2] == 0x30);  // byte 2: sub-command echoed back
 
 	// copy settings to currentChipSettings_
 	chipUSBSettings.vendorId = vendorId;
@@ -458,19 +461,19 @@ void SPIBridge::setManufacturerName(std::wstring manufacturerName)
   }
 
   // initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  memset(buffer_, 0x00, 64);
 
   // fill in command
-  buffer[0] = 0x60;   // command code for "Set Chip NVRAM Parameters"
-  buffer[1] = 0x50;   // sub-command code for "Set Manufacturer String"
-  buffer[2] = 0x00;   // reserved
-  buffer[3] = 0x00;   // reserved
+  buffer_[0] = 0x60;   // command code for "Set Chip NVRAM Parameters"
+  buffer_[1] = 0x50;   // sub-command code for "Set Manufacturer String"
+  buffer_[2] = 0x00;   // reserved
+  buffer_[3] = 0x00;   // reserved
 
   // byte 4: string length*2+2
-  buffer[4] = manufacturerName.length()*2 + 2;
+  buffer_[4] = manufacturerName.length()*2 + 2;
 
   // byte 5: USB String Descriptor ID = 0x03
-  buffer[5] = 0x03;
+  buffer_[5] = 0x03;
 
   for(int i=0; i<manufacturerName.length(); i++)
   {
@@ -481,20 +484,20 @@ void SPIBridge::setManufacturerName(std::wstring manufacturerName)
     };
     c = manufacturerName[i];
 
-    buffer[6+2*i+0] = bytes[0];
-    buffer[6+2*i+1] = bytes[1];     // 2nd byte of unicode character
+    buffer_[6+2*i+0] = bytes[0];
+    buffer_[6+2*i+1] = bytes[1];     // 2nd byte of unicode character
   }
 
   // send command
-	hid_write(hidDevice_, buffer, 64);
+	hid_write(hidDevice_, buffer_, 64);
 
 	// receive response (blocking)
-	hid_read(hidDevice_, buffer, 64);
+	hid_read(hidDevice_, buffer_, 64);
 
 	// parse response (Response 2 in data sheet)
-	assert(buffer[0] == 0x60);  // byte 0: echos back the given command code
-	assert(buffer[1] == 0x00);  // byte 1: settings written
-	assert(buffer[2] == 0x50);  // byte 2: sub-command echoed back
+	assert(buffer_[0] == 0x60);  // byte 0: echos back the given command code
+	assert(buffer_[1] == 0x00);  // byte 1: settings written
+	assert(buffer_[2] == 0x50);  // byte 2: sub-command echoed back
 
 	chipUSBSettings.manufacturerName = manufacturerName;
 
@@ -512,19 +515,19 @@ void SPIBridge::setProductName(std::wstring productName)
   }
 
   // initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  memset(buffer_, 0x00, 64);
 
   // fill in command
-  buffer[0] = 0x60;   // command code for "Set Chip NVRAM Parameters"
-  buffer[1] = 0x40;   // sub-command code for "Set Manufacturer String"
-  buffer[2] = 0x00;   // reserved
-  buffer[3] = 0x00;   // reserved
+  buffer_[0] = 0x60;   // command code for "Set Chip NVRAM Parameters"
+  buffer_[1] = 0x40;   // sub-command code for "Set Manufacturer String"
+  buffer_[2] = 0x00;   // reserved
+  buffer_[3] = 0x00;   // reserved
 
   // byte 4: string length*2+2
-  buffer[4] = productName.length()*2 + 2;
+  buffer_[4] = productName.length()*2 + 2;
 
   // byte 5: USB String Descriptor ID = 0x03
-  buffer[5] = 0x03;
+  buffer_[5] = 0x03;
 
   for(int i=0; i<productName.length(); i++)
   {
@@ -535,20 +538,20 @@ void SPIBridge::setProductName(std::wstring productName)
     };
     c = productName[i];
 
-    buffer[6+2*i+0] = bytes[0];
-    buffer[6+2*i+1] = bytes[1];     // 2nd byte of unicode character
+    buffer_[6+2*i+0] = bytes[0];
+    buffer_[6+2*i+1] = bytes[1];     // 2nd byte of unicode character
   }
 
   // send command
-	hid_write(hidDevice_, buffer, 64);
+	hid_write(hidDevice_, buffer_, 64);
 
 	// receive response (blocking)
-	hid_read(hidDevice_, buffer, 64);
+	hid_read(hidDevice_, buffer_, 64);
 
 	// parse response (Response 2 in data sheet)
-	assert(buffer[0] == 0x60);  // byte 0: echos back the given command code
-	assert(buffer[1] == 0x00);  // byte 1: settings written
-	assert(buffer[2] == 0x40);  // byte 2: sub-command echoed back
+	assert(buffer_[0] == 0x60);  // byte 0: echos back the given command code
+	assert(buffer_[1] == 0x00);  // byte 1: settings written
+	assert(buffer_[2] == 0x40);  // byte 2: sub-command echoed back
 
 	chipUSBSettings.productName = productName;
 }
@@ -558,6 +561,7 @@ void SPIBridge::setCurrentAmountFromHost(int currentAmountFromHost)
   if(DEBUG)
     std::cout << "SPIBridge::setCurrentAmountFromHost" << std::endl;
 
+  chipUSBSettings.hostPowered = true;
   setUSBKeyParameters(chipUSBSettings.vendorId, chipUSBSettings.productId, chipUSBSettings.hostPowered, chipUSBSettings.remoteWakeUpCapable, currentAmountFromHost);
 
 	chipUSBSettings.currentAmountFromHost = currentAmountFromHost;
@@ -570,50 +574,50 @@ void SPIBridge::getTransferSettings(bool currentValues)
     std::cout << "SPIBridge::getTransferSettings(currentValues=" << std::boolalpha << currentValues << ")" << std::endl;
 
   // initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  memset(buffer_, 0x00, 64);
 
   ChipSettings *chipSettings;
 
   // fill in command
   if(currentValues)
   {
-    buffer[0] = 0x41;   // command code for "Get (VM) SPI Transfer Settings"
-    buffer[1] = 0x00;   // Reserved
+    buffer_[0] = 0x41;   // command code for "Get (VM) SPI Transfer Settings"
+    buffer_[1] = 0x00;   // Reserved
     chipSettings = &currentChipSettings_;
   }
   else
   {
-    buffer[0] = 0x61;   // command code for "Get NVRAM Settings"
-    buffer[1] = 0x10;   // sub-command code for "Get SPI Power-up Transfer Settings"
+    buffer_[0] = 0x61;   // command code for "Get NVRAM Settings"
+    buffer_[1] = 0x10;   // sub-command code for "Get SPI Power-up Transfer Settings"
     chipSettings = &powerUpChipSettings_;
   }
 
   // send command
-	hid_write(hidDevice_, buffer, 64);
+	hid_write(hidDevice_, buffer_, 64);
 
 	// receive response (blocking)
-	hid_read(hidDevice_, buffer, 64);
+	hid_read(hidDevice_, buffer_, 64);
 
 	if (DEBUG2)
 	{
     std::cout<<"response: ";
     for(int i=0; i<21; i++)
-      std::cout<<std::hex<<int(buffer[i])<<" ";
+      std::cout<<std::hex<<int(buffer_[i])<<" ";
     std::cout<<std::endl;
   }
 
 	// parse response (Response 1 in data sheet)
   if(currentValues)
   {
-    assert(buffer[0] == 0x41);  // byte 0: echos back the given command code
-    assert(buffer[1] == 0x00);  // byte 1: command completed successfully
-    assert(buffer[2] == 0x11);  // byte 2: size in bytes of the SPI transfer structure (17 bytes)
+    assert(buffer_[0] == 0x41);  // byte 0: echos back the given command code
+    assert(buffer_[1] == 0x00);  // byte 1: command completed successfully
+    assert(buffer_[2] == 0x11);  // byte 2: size in bytes of the SPI transfer structure (17 bytes)
   }
   else
   {
-    assert(buffer[0] == 0x61);  // byte 0: echos back the given command code
-    assert(buffer[1] == 0x00);  // byte 1: command completed successfully
-    assert(buffer[2] == 0x10);  // byte 2: sub-command echoed back
+    assert(buffer_[0] == 0x61);  // byte 0: echos back the given command code
+    assert(buffer_[1] == 0x00);  // byte 1: command completed successfully
+    assert(buffer_[2] == 0x10);  // byte 2: sub-command echoed back
   }
 	// byte 3: don't care
 
@@ -627,10 +631,10 @@ void SPIBridge::getTransferSettings(bool currentValues)
   {
     std::cout<<"SPIBridge::getTransferSettings(currentValues=" << std::boolalpha << currentValues << ")"
       <<" recv bitRate bytes: "<<std::hex<<std::setfill('0')<<std::setw(2)
-      <<int(buffer[7])<<","<<std::setw(2)<<int(buffer[6])<<","<<std::setw(2)<<int(buffer[5])<<","<<std::setw(2)<<int(buffer[4])<<std::dec;
+      <<int(buffer_[7])<<","<<std::setw(2)<<int(buffer_[6])<<","<<std::setw(2)<<int(buffer_[5])<<","<<std::setw(2)<<int(buffer_[4])<<std::dec;
   }
 
-	memcpy(b, buffer+4, 4);
+	memcpy(b, buffer_+4, 4);
 	chipSettings->bitRate = int32;
 
 	if (DEBUG)
@@ -642,19 +646,19 @@ void SPIBridge::getTransferSettings(bool currentValues)
 	char mask = 0x01;
 	for(int i=0; i<8; i++)
 	{
-    chipSettings->idleChipSelect[i] = buffer[8] & mask;
+    chipSettings->idleChipSelect[i] = buffer_[8] & mask;
     mask <<= 1;
 	}
-	chipSettings->idleChipSelect[8] = buffer[9] & 0x01;
+	chipSettings->idleChipSelect[8] = buffer_[9] & 0x01;
 
 	// bytes 10 and 11: active chip select value
 	mask = 0x01;
 	for(int i=0; i<8; i++)
 	{
-    chipSettings->activeChipSelect[i] = buffer[10] & mask;
+    chipSettings->activeChipSelect[i] = buffer_[10] & mask;
     mask <<= 1;
 	}
-	chipSettings->activeChipSelect[8] = buffer[11] & 0x01;
+	chipSettings->activeChipSelect[8] = buffer_[11] & 0x01;
 
 	// bytes 12 and 13: chip select to data delay (quanta of 100 us)
 	union {
@@ -662,27 +666,27 @@ void SPIBridge::getTransferSettings(bool currentValues)
     char bytes[2];
 	};
 
-	bytes[0] = buffer[12];
-	bytes[1] = buffer[13];
+	bytes[0] = buffer_[12];
+	bytes[1] = buffer_[13];
 	chipSettings->delayCSToData = int16 * 100e-6;
 
 	// bytes 14 and 15: last data byte to chip select (quanta of 100 us)
-	bytes[0] = buffer[14];
-	bytes[1] = buffer[15];
+	bytes[0] = buffer_[14];
+	bytes[1] = buffer_[15];
 	chipSettings->delayLastByteToCS = int16 * 100e-6;
 
 	// bytes 16 and 17: delay between subsequent data bytes (quanta of 100 us)
-	bytes[0] = buffer[16];
-	bytes[1] = buffer[17];
+	bytes[0] = buffer_[16];
+	bytes[1] = buffer_[17];
 	chipSettings->delayDataToData = int16 * 100e-6;
 
 	// bytes 18 and 19: bytes to transfer per SPI TRansaction
-	bytes[0] = buffer[18];
-	bytes[1] = buffer[19];
+	bytes[0] = buffer_[18];
+	bytes[1] = buffer_[19];
 	chipSettings->spiTransactionLength = int16;
 
 	// byte 20: SPI mode
-	chipSettings->spiMode = SPIBridge::SPIMode(buffer[20]);
+	chipSettings->spiMode = SPIBridge::SPIMode(buffer_[20]);
 
 	// bytes 21 to 63: don't care
 }
@@ -693,76 +697,76 @@ void SPIBridge::getSettings(bool currentValues)
     std::cout << "SPIBridge::getSettings(currentValues=" << std::boolalpha << currentValues << ")" << std::endl;
 
   // initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  memset(buffer_, 0x00, 64);
 
   ChipSettings *chipSettings;
 
   //fill in command
   if(currentValues)
   {
-    buffer[0] = 0x20;   // command code for "Get (VM) GPIO Current Chip Settings"
-    buffer[1] = 0x00;   // reserved
-    buffer[2] = 0x00;   // reserved
+    buffer_[0] = 0x20;   // command code for "Get (VM) GPIO Current Chip Settings"
+    buffer_[1] = 0x00;   // reserved
+    buffer_[2] = 0x00;   // reserved
     chipSettings = &currentChipSettings_;
   }
   else
   {
-    buffer[0] = 0x61;   // command code for "Get NVRAM Settings"
-    buffer[1] = 0x20;   // sub-command code for "Get SPI Power-up Transfer Settings"
+    buffer_[0] = 0x61;   // command code for "Get NVRAM Settings"
+    buffer_[1] = 0x20;   // sub-command code for "Get SPI Power-up Transfer Settings"
     chipSettings = &powerUpChipSettings_;
   }
 
   // send command
-	hid_write(hidDevice_, buffer, 64);
+	hid_write(hidDevice_, buffer_, 64);
 
 	// receive response (blocking)
-	hid_read(hidDevice_, buffer, 64);
+	hid_read(hidDevice_, buffer_, 64);
 
 	// parse response (Response 1 in data sheet)
 	if(currentValues)
 	{
-    assert(buffer[0] == 0x20);  // byte 0: echos back the given command code
-    assert(buffer[1] == 0x00);  // byte 1: command completed successfully
+    assert(buffer_[0] == 0x20);  // byte 0: echos back the given command code
+    assert(buffer_[1] == 0x00);  // byte 1: command completed successfully
 	}
 	else
 	{
-    assert(buffer[0] == 0x61);  // byte 0: echos back the given command code
-    assert(buffer[1] == 0x00);  // byte 1: command completed successfully
-    assert(buffer[2] == 0x20);  // byte 2: sub-command echoed back
+    assert(buffer_[0] == 0x61);  // byte 0: echos back the given command code
+    assert(buffer_[1] == 0x00);  // byte 1: command completed successfully
+    assert(buffer_[2] == 0x20);  // byte 2: sub-command echoed back
   }
 	// byte 3: don't care
 
 	// bytes 4 to 12: Pin designations
 	for(int i=0; i<9; i++)
 	{
-    chipSettings->pinDesignation[i] = PinDesignation(buffer[i+4]);
+    chipSettings->pinDesignation[i] = PinDesignation(buffer_[i+4]);
 	}
 
 	// bytes 13 and 14: default GPIO output
 	char mask = 0x01;
 	for(int i=0; i<8; i++)
 	{
-    chipSettings->ioValue[i] = buffer[13] & mask;
+    chipSettings->ioValue[i] = buffer_[13] & mask;
     mask <<= 1;
 	}
-	chipSettings->ioValue[8] = buffer[14] & 0x01;
+	chipSettings->ioValue[8] = buffer_[14] & 0x01;
 
 	// bytes 15 and 16: default GPIO direction
 	mask = 0x01;
 	for(int i=0; i<8; i++)
 	{
-    chipSettings->ioDirection[i] = buffer[15] & mask;
+    chipSettings->ioDirection[i] = buffer_[15] & mask;
     mask <<= 1;
 	}
-	chipSettings->ioDirection[8] = buffer[16] & 0x01;
+	chipSettings->ioDirection[8] = buffer_[16] & 0x01;
 
 	// byte 17: other chip settings
-	chipSettings->enableRemoteWakeUp = buffer[17] & 0x10;
-	chipSettings->interruptPinMode = InterruptPinMode(buffer[17] & 0x02);
-	chipSettings->enableSPIBusRelease = !(buffer[17] & 0x01);
+	chipSettings->enableRemoteWakeUp = buffer_[17] & 0x10;
+	chipSettings->interruptPinMode = InterruptPinMode(buffer_[17] & 0x02);
+	chipSettings->enableSPIBusRelease = !(buffer_[17] & 0x01);
 
 	// byte 18: chip parameter access control
-	assert(buffer[18] == 0x00);   // 0x00 = chip settings not protected, 0x40 = protected by password, 0x80 = permanently locked
+	assert(buffer_[18] == 0x00);   // 0x00 = chip settings not protected, 0x40 = protected by password, 0x80 = permanently locked
 
 	// bytes 19 to 63: don't care
 }
@@ -773,22 +777,22 @@ void SPIBridge::getUSBKeyParameters()
     std::cout << "SPIBridge::getUSBKeyParameters" << std::endl;
 
   // initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  memset(buffer_, 0x00, 64);
 
   // fill in command
-  buffer[0] = 0x61;   // command code for "Get NVRAM Settings"
-  buffer[1] = 0x30;   // sub-command code for "Get USB Key Parameters"
+  buffer_[0] = 0x61;   // command code for "Get NVRAM Settings"
+  buffer_[1] = 0x30;   // sub-command code for "Get USB Key Parameters"
 
   // send command
-	hid_write(hidDevice_, buffer, 64);
+	hid_write(hidDevice_, buffer_, 64);
 
 	// receive response (blocking)
-	hid_read(hidDevice_, buffer, 64);
+	hid_read(hidDevice_, buffer_, 64);
 
 	// parse response (Response 1 in data sheet)
-	assert(buffer[0] == 0x61);  // byte 0: echos back the given command code
-	assert(buffer[1] == 0x00);  // byte 1: command completed successfully
-	assert(buffer[2] == 0x30);  // byte 2: sub-command echoed back
+	assert(buffer_[0] == 0x61);  // byte 0: echos back the given command code
+	assert(buffer_[1] == 0x00);  // byte 1: command completed successfully
+	assert(buffer_[2] == 0x30);  // byte 2: sub-command echoed back
 	// bytes 3 to 11: don't care
 
 	union {
@@ -797,22 +801,22 @@ void SPIBridge::getUSBKeyParameters()
 	};
 
 	// bytes 12 and 13: vendor id
-	bytes[0] = buffer[12];
-	bytes[1] = buffer[13];
+	bytes[0] = buffer_[12];
+	bytes[1] = buffer_[13];
 	chipUSBSettings.vendorId = int16;
 
 	// bytes 14 and 15: product id
-	bytes[0] = buffer[14];
-	bytes[1] = buffer[15];
+	bytes[0] = buffer_[14];
+	bytes[1] = buffer_[15];
 	chipUSBSettings.productId = int16;
 
 	// bytes 16 to 28: don't care
 	// byte 29: chip power option
-	chipUSBSettings.hostPowered = buffer[29] & 0x80;
-	chipUSBSettings.remoteWakeUpCapable = buffer[29] & 0x20;
+	chipUSBSettings.hostPowered = buffer_[29] & 0x80;
+	chipUSBSettings.remoteWakeUpCapable = buffer_[29] & 0x20;
 
 	// byte 30: requested current amount from USB host (quanta of 2mA)
-	chipUSBSettings.currentAmountFromHost = buffer[30]*2;
+	chipUSBSettings.currentAmountFromHost = buffer_[30]*2;
 
 	// bytes 31 to 63: don't care
 }
@@ -823,29 +827,29 @@ void SPIBridge::getManufacturerName()
     std::cout << "SPIBridge::getManufacturerName" << std::endl;
 
   // initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  memset(buffer_, 0x00, 64);
 
   // fill in command
-  buffer[0] = 0x61;   // command code for "Get NVRAM Settings"
-  buffer[1] = 0x50;   // sub-command code for "Get USB Manufacturer Name"
+  buffer_[0] = 0x61;   // command code for "Get NVRAM Settings"
+  buffer_[1] = 0x50;   // sub-command code for "Get USB Manufacturer Name"
 
   // send command
-	hid_write(hidDevice_, buffer, 64);
+	hid_write(hidDevice_, buffer_, 64);
 
 	// receive response (blocking)
-	hid_read(hidDevice_, buffer, 64);
+	hid_read(hidDevice_, buffer_, 64);
 
 	// parse response (Response 1 in data sheet)
-	assert(buffer[0] == 0x61);  // byte 0: echos back the given command code
-	assert(buffer[1] == 0x00);  // byte 1: command completed successfully
-	assert(buffer[2] == 0x50);  // byte 2: sub-command echoed back
+	assert(buffer_[0] == 0x61);  // byte 0: echos back the given command code
+	assert(buffer_[1] == 0x00);  // byte 1: command completed successfully
+	assert(buffer_[2] == 0x50);  // byte 2: sub-command echoed back
 	// byte 3: don't care
 
 	// byte 4: length
-	int length = (buffer[4]-2)/2;
+	int length = (buffer_[4]-2)/2;
 
 	// byte 5: 0x03
-	assert(buffer[5] == 0x03);
+	assert(buffer_[5] == 0x03);
 
 	// bytes 6 to 63: remaining unicode characters
 	chipUSBSettings.manufacturerName = L"";
@@ -856,8 +860,8 @@ void SPIBridge::getManufacturerName()
       wchar_t c;
       char bytes[2];
     };
-    bytes[0] = buffer[6+i*2+0];
-    bytes[1] = buffer[6+i*2+1];
+    bytes[0] = buffer_[6+i*2+0];
+    bytes[1] = buffer_[6+i*2+1];
     chipUSBSettings.manufacturerName += c;
 	}
 }
@@ -868,28 +872,28 @@ void SPIBridge::getProductName()
     std::cout << "SPIBridge::getProductName" << std::endl;
 
   // initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  memset(buffer_, 0x00, 64);
 
   // fill in command
-  buffer[0] = 0x61;   // command code for "Get NVRAM Settings"
-  buffer[1] = 0x40;   // sub-command code for "Get USB Manufacturer Name"
+  buffer_[0] = 0x61;   // command code for "Get NVRAM Settings"
+  buffer_[1] = 0x40;   // sub-command code for "Get USB Manufacturer Name"
 
   // send command
-	hid_write(hidDevice_, buffer, 64);
+	hid_write(hidDevice_, buffer_, 64);
 
 	// receive response (blocking)
-	hid_read(hidDevice_, buffer, 64);
+	hid_read(hidDevice_, buffer_, 64);
 
 	// parse response (Response 1 in data sheet)
-	assert(buffer[0] == 0x61);  // byte 0: echos back the given command code
-	assert(buffer[1] == 0x00);  // byte 1: command completed successfully
-	assert(buffer[2] == 0x40);  // byte 2: sub-command echoed back
+	assert(buffer_[0] == 0x61);  // byte 0: echos back the given command code
+	assert(buffer_[1] == 0x00);  // byte 1: command completed successfully
+	assert(buffer_[2] == 0x40);  // byte 2: sub-command echoed back
 	// byte 3: don't care
 
 	// byte 4: length
-	int length = (buffer[4]-2)/2;
+	int length = (buffer_[4]-2)/2;
 	// byte 5: 0x03
-	assert(buffer[5] == 0x03);
+	assert(buffer_[5] == 0x03);
 
 	// bytes 6 to 63: remaining unicode characters
 	chipUSBSettings.productName = L"";
@@ -900,8 +904,8 @@ void SPIBridge::getProductName()
       wchar_t c;
       char bytes[2];
     };
-    bytes[0] = buffer[6+i*2+0];
-    bytes[1] = buffer[6+i*2+1];
+    bytes[0] = buffer_[6+i*2+0];
+    bytes[1] = buffer_[6+i*2+1];
     chipUSBSettings.productName += c;
 	}
 }
@@ -912,30 +916,30 @@ void SPIBridge::getCurrentPinDirection()
     std::cout << "SPIBridge::getCurrentPinDirection" << std::endl;
 
   // initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  memset(buffer_, 0x00, 64);
 
-  buffer[0] = 0x33;   // command code for "Get (VM) GPIO Current Pin Direction"
-  buffer[1] = 0x00;   // reserved
-  buffer[2] = 0x00;   // reserved
+  buffer_[0] = 0x33;   // command code for "Get (VM) GPIO Current Pin Direction"
+  buffer_[1] = 0x00;   // reserved
+  buffer_[2] = 0x00;   // reserved
 
   // send command
-	hid_write(hidDevice_, buffer, 64);
+	hid_write(hidDevice_, buffer_, 64);
 
 	// receive response (blocking)
-	hid_read(hidDevice_, buffer, 64);
+	hid_read(hidDevice_, buffer_, 64);
 
 	// parse response (Response 1 in data sheet)
-  assert(buffer[0] == 0x33);  // byte 0: echos back the given command code
-  assert(buffer[1] == 0x00);  // byte 1: command completed successfully
+  assert(buffer_[0] == 0x33);  // byte 0: echos back the given command code
+  assert(buffer_[1] == 0x00);  // byte 1: command completed successfully
   // bytes 2 and 3: don't care
   // byte 4: GPIO Direction
   char mask = 0x01;
   for(int i=0; i<8; i++)
   {
-    currentChipSettings_.ioDirection[i] = buffer[4] & mask;
+    currentChipSettings_.ioDirection[i] = buffer_[4] & mask;
     mask <<= 1;
   }
-  currentChipSettings_.ioDirection[8] = buffer[5] & 0x01;
+  currentChipSettings_.ioDirection[8] = buffer_[5] & 0x01;
 
   // bytes 6 to 63: don't care
 }
@@ -946,32 +950,32 @@ void SPIBridge::setCurrentPinDirection(bool ioDirection[9])
     std::cout << "SPIBridge::setCurrentPinDirection" << std::endl;
 
   // initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  memset(buffer_, 0x00, 64);
 
-  buffer[0] = 0x32;   // command code for "Set (VM) GPIO Current Pin Direction"
-  buffer[1] = 0x00;   // reserved
-  buffer[2] = 0x00;   // reserved
-  buffer[3] = 0x00;   // reserved
+  buffer_[0] = 0x32;   // command code for "Set (VM) GPIO Current Pin Direction"
+  buffer_[1] = 0x00;   // reserved
+  buffer_[2] = 0x00;   // reserved
+  buffer_[3] = 0x00;   // reserved
 
   // byte 4: gpio direction
   char mask = 0x01;
   for(int i=0; i<8; i++)
   {
-    buffer[4] |= (ioDirection[i] * mask);
+    buffer_[4] |= (ioDirection[i] * mask);
     mask <<= 1;
   }
-  buffer[5] |= (ioDirection[8] * 0x01);
+  buffer_[5] |= (ioDirection[8] * 0x01);
   // bytes 6 to 63: reserved
 
   // send command
-	hid_write(hidDevice_, buffer, 64);
+	hid_write(hidDevice_, buffer_, 64);
 
 	// receive response (blocking)
-	hid_read(hidDevice_, buffer, 64);
+	hid_read(hidDevice_, buffer_, 64);
 
 	// parse response (Response 1 in data sheet)
-  assert(buffer[0] == 0x32);  // byte 0: echos back the given command code
-  assert(buffer[1] == 0x00);  // byte 1: command completed successfully
+  assert(buffer_[0] == 0x32);  // byte 0: echos back the given command code
+  assert(buffer_[1] == 0x00);  // byte 1: command completed successfully
   // bytes 2 to 63: don't care
 
   // copy new settings to chipSettings
@@ -987,30 +991,30 @@ void SPIBridge::getCurrentPinValue()
     std::cout << "SPIBridge::getCurrentPinValue" << std::endl;
 
   // initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  memset(buffer_, 0x00, 64);
 
-  buffer[0] = 0x31;   // command code for "Get (VM) GPIO Current Pin Value"
-  buffer[1] = 0x00;   // reserved
-  buffer[2] = 0x00;   // reserved
+  buffer_[0] = 0x31;   // command code for "Get (VM) GPIO Current Pin Value"
+  buffer_[1] = 0x00;   // reserved
+  buffer_[2] = 0x00;   // reserved
 
   // send command
-	hid_write(hidDevice_, buffer, 64);
+	hid_write(hidDevice_, buffer_, 64);
 
 	// receive response (blocking)
-	hid_read(hidDevice_, buffer, 64);
+	hid_read(hidDevice_, buffer_, 64);
 
 	// parse response (Response 1 in data sheet)
-  assert(buffer[0] == 0x31);  // byte 0: echos back the given command code
-  assert(buffer[1] == 0x00);  // byte 1: command completed successfully
+  assert(buffer_[0] == 0x31);  // byte 0: echos back the given command code
+  assert(buffer_[1] == 0x00);  // byte 1: command completed successfully
   // bytes 2 and 3: don't care
   // bytes 4 and 5: GPIO Value
   char mask = 0x01;
   for(int i=0; i<8; i++)
   {
-    currentChipSettings_.ioValue[i] = buffer[4] & mask;
+    currentChipSettings_.ioValue[i] = buffer_[4] & mask;
     mask <<= 1;
   }
-  currentChipSettings_.ioValue[8] = buffer[5] & 0x01;
+  currentChipSettings_.ioValue[8] = buffer_[5] & 0x01;
 
   // bytes 6 to 63: don't care
 }
@@ -1021,21 +1025,21 @@ void SPIBridge::setCurrentPinValue(bool ioValue[9])
     std::cout << "SPIBridge::setCurrentPinValue" << std::endl;
 
   // initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  memset(buffer_, 0x00, 64);
 
-  buffer[0] = 0x30;   // command code for "Set (VM) GPIO Current Pin Value"
-  buffer[1] = 0x00;   // reserved
-  buffer[2] = 0x00;   // reserved
-  buffer[3] = 0x00;   // reserved
+  buffer_[0] = 0x30;   // command code for "Set (VM) GPIO Current Pin Value"
+  buffer_[1] = 0x00;   // reserved
+  buffer_[2] = 0x00;   // reserved
+  buffer_[3] = 0x00;   // reserved
 
   // byte 4: pin value
   char mask = 0x01;
   for(int i=0; i<8; i++)
   {
-    buffer[4] |= (ioValue[i] * mask);
+    buffer_[4] |= (ioValue[i] * mask);
     mask <<= 1;
   }
-  buffer[5] |= (ioValue[8] * 0x01);
+  buffer_[5] |= (ioValue[8] * 0x01);
   // bytes 6 to 63: reserved
 
   // copy new settings to chipSettings
@@ -1045,24 +1049,24 @@ void SPIBridge::setCurrentPinValue(bool ioValue[9])
   }
 
   // send command
-	hid_write(hidDevice_, buffer, 64);
+	hid_write(hidDevice_, buffer_, 64);
 
 	// receive response (blocking)
-	hid_read(hidDevice_, buffer, 64);
+	hid_read(hidDevice_, buffer_, 64);
 
 	// parse response (Response 1 in data sheet)
-  assert(buffer[0] == 0x30);  // byte 0: echos back the given command code
-  assert(buffer[1] == 0x00);  // byte 1: command completed successfully
+  assert(buffer_[0] == 0x30);  // byte 0: echos back the given command code
+  assert(buffer_[1] == 0x00);  // byte 1: command completed successfully
   // bytes 2 and 3: don't care
 
   // bytes 4 and 5: GPIO Value
   mask = 0x01;
   for(int i=0; i<8; i++)
   {
-    currentChipSettings_.ioValue[i] = buffer[4] & mask;
+    currentChipSettings_.ioValue[i] = buffer_[4] & mask;
     mask <<= 1;
   }
-  currentChipSettings_.ioValue[8] = buffer[5] & 0x01;
+  currentChipSettings_.ioValue[8] = buffer_[5] & 0x01;
   // bytes 6 to 63: don't care
 }
 
@@ -1203,56 +1207,56 @@ void SPIBridge::getChipStatus()
     std::cout << "SPIBridge::getChipStatus" << std::endl;
 
   // initialize buffer to 0
-  memset(buffer, 0x00, 64);
+  memset(buffer_, 0x00, 64);
 
-  buffer[0] = 0x10;   // byte 0: command code for "Get MCP2210 Status"
+  buffer_[0] = 0x10;   // byte 0: command code for "Get MCP2210 Status"
   // byte 2 to 63: reserved
 
   // send command
-  hid_write(hidDevice_, buffer, 64);
+  hid_write(hidDevice_, buffer_, 64);
 
   // receive response (blocking)
-  hid_read(hidDevice_, buffer, 64);
+  hid_read(hidDevice_, buffer_, 64);
 
   // parse response (Response 1 in data sheet)
-  assert(buffer[0] == 0x10);  // byte 0: echos back the given command code
-  assert(buffer[1] == 0x00);  // byte 1: command completed successfully
+  assert(buffer_[0] == 0x10);  // byte 0: echos back the given command code
+  assert(buffer_[1] == 0x00);  // byte 1: command completed successfully
 
   std::cout<<"MCP2210 Status: "<<std::endl;
 
   // byte 2: SPI Bus Release External Request Status
-  if(buffer[2] == 0x01)
+  if(buffer_[2] == 0x01)
   {
     std::cout<<"  No External Request for SPI Bus Release"<<std::endl;
   }
-  else if(buffer[2] == 0x00)
+  else if(buffer_[2] == 0x00)
   {
     std::cout<<"  Pending External Request for SPI Bus Release"<<std::endl;
   }
 
   // byte 3: SPI Bus Current Owner
-  if(buffer[3] == 0x00)
+  if(buffer_[3] == 0x00)
   {
     std::cout<<"  SPI Bus current Owner: No Owner"<<std::endl;
   }
-  else if(buffer[3] == 0x01)
+  else if(buffer_[3] == 0x01)
   {
     std::cout<<"  SPI Bus current Owner: USB Bridge"<<std::endl;
   }
-  else if(buffer[3] == 0x02)
+  else if(buffer_[3] == 0x02)
   {
     std::cout<<"  SPI Bus current Owner: External Master"<<std::endl;
   }
 
   // byte 4: Attempted Password Accesses
-  std::cout<<"  Number of Password Attempts: "<<int(buffer[4])<<std::endl;
+  std::cout<<"  Number of Password Attempts: "<<int(buffer_[4])<<std::endl;
 
   // byte 5: Password Guessed
-  if(buffer[5] == 0x00)
+  if(buffer_[5] == 0x00)
   {
     std::cout<<"  Password Not Guessed"<<std::endl;
   }
-  else if(buffer[5] == 0x01)
+  else if(buffer_[5] == 0x01)
   {
     std::cout<<"  Password Guessed"<<std::endl;
   }
