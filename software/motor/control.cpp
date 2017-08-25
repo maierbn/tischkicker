@@ -33,7 +33,19 @@ Control::Control() :
     AnalogDigitalConverter(*this)
   })
 {
+  // initialize SPI bridge
   initializeSPIBridge();
+
+  // specifiy direction of I/O pins of mainboard I/O extender (4 LEDs, 2 switches)
+  IOExtender::IODirection ioDirectionRegisterA[8] = {IOExtender::IODirection::in};
+  IOExtender::IODirection ioDirectionRegisterB[8] = {IOExtender::IODirection::in};
+
+  ioDirectionRegisterA[0] = IOExtender::IODirection::out;
+  ioDirectionRegisterA[1] = IOExtender::IODirection::out;
+  ioDirectionRegisterA[2] = IOExtender::IODirection::out;
+  ioDirectionRegisterA[3] = IOExtender::IODirection::out;
+
+  mainboardIO_.setPinIODirection(ioDirectionRegisterA, ioDirectionRegisterB);
 }
 
 void Control::initializeSPIBridge()
@@ -82,7 +94,7 @@ void Control::initializeSPIBridge()
   currentlySelectedComponent_ = None;
 
   // delays (in seconds)
-  double delayCSToData = 50e-9;     //50 ns
+  double delayCSToData = 100e-9;     //100 ns
   double delayLastByteToCS = 10e-9;
   double delayDataToData = 10e-9;
 
@@ -111,7 +123,12 @@ void Control::collectAndPrintSettings()
 
 void Control::selectChip(SPIComponent spiComponent, int spiTransactionLength)
 {
-  std::cout<<"select chip "<<spiComponentName[spiComponent]<<std::endl;
+  if(spiComponent > BemfADCB || spiComponent < 0)
+  {
+    std::cout<<"Error in Control::selectChip: SPI component "<<spiComponent<<" does not exist!"<<std::endl;
+    exit(-1);
+  }
+  //std::cout<<"select chip "<<spiComponentName[spiComponent]<<std::endl;
   if(spiComponent != currentlySelectedComponent_ || spiTransactionLength != currentSPITransferLength_)
   {
     // configure SPI bridge to select component
@@ -145,6 +162,25 @@ void Control::selectChip(SPIComponent spiComponent, int spiTransactionLength)
       idleChipSelect_[PinCSMotor1] = SPIBridge::ChipSelectValue::CSInactive;
       idleChipSelect_[PinCSMotor2] = SPIBridge::ChipSelectValue::CSInactive;
       idleChipSelect_[PinCSAux] = SPIBridge::ChipSelectValue::CSInactive;
+
+      // case direct connection via GPIO6 (CSMotor1)
+      if(true)
+      {
+        activeChipSelect_[PinCSMotor1] = SPIBridge::ChipSelectValue::CSActive;
+        activeChipSelect_[PinCSMotor2] = SPIBridge::ChipSelectValue::CSInactive;
+        activeChipSelect_[PinCSAux] = SPIBridge::ChipSelectValue::CSInactive;
+
+        idleChipSelect_[PinCSMotor1] = SPIBridge::ChipSelectValue::CSInactive;
+        idleChipSelect_[PinCSMotor2] = SPIBridge::ChipSelectValue::CSInactive;
+        idleChipSelect_[PinCSAux] = SPIBridge::ChipSelectValue::CSInactive;
+      }
+
+      // case jumper GPIO8-CSIO-Ex set
+      if (spiComponent == mainboardIO && false)
+      {
+        activeChipSelect_[PinCSAux] = 1;
+        idleChipSelect_[PinCSAux] = 0;
+      }
 
       currentlySelectedComponent_ = spiComponent;
       currentSPITransferLength_ = spiTransactionLength;
@@ -223,6 +259,7 @@ void Control::selectChip(SPIComponent spiComponent, int spiTransactionLength)
       return;
     }
   }
+  collectAndPrintSettings();
 }
 
 void Control::spiTransfer(SPIComponent spiComponent, unsigned char *buffer, int length)
@@ -422,7 +459,8 @@ void Control::testLEDs()
   }
 
   std::cout<<"Test 6: chasing light on mainboard"<<std::endl;
-  mainboardIO_.showChasingLight();
+  ledOutput_.showChasingLight();
+  //mainboardIO_.showChasingLight();
 
 }
 

@@ -10,7 +10,17 @@ class Control;
 class IOExtender
 {
 public:
+
+  enum IODirection
+  {
+    out = 0,
+    in = 1
+  };
+
   IOExtender(Control &control, SPIComponent spiComponent, int hardwareAddress=0);
+
+  ///! specify which pins are input and which are output pins, default is all are input pins
+  void setPinIODirection(IODirection ioDirectionA[8], IODirection ioDirectionB[8]);
 
   ///! drive a chasing light
   void showChasingLight();
@@ -25,7 +35,7 @@ public:
   void setOutputCached(int ledNumber, bool on);
 
   ///! set the values of the LEDs to those previously set by setOutputCached
-  void applyOutputValues();
+  void applyOutputValues(bool debug=false);
 
   ///! read all input values in GPIO A0:8 and B0:8, return as 16 bits
   uint16_t readInputValues(bool debug=false);
@@ -79,20 +89,20 @@ private:
     write = 0x00,   // Write command mask: 0000 0000
   };
 
-  enum IODirection
-  {
-    out = 0,
-    in = 1
-  };
-
   ///! modify the on-chip configuration
   void configure(bool debug=false);
 
   ///! read the value of a register
   unsigned char readRegister(RegisterAddress registerAddress, bool debug=false);
 
+  ///! read two values of two corresponding A/B registers, set in output
+  void readRegisterPair(RegisterAddress registerAddress, unsigned char output[2], bool debug);
+
   ///! write a value to a register
   void writeRegister(RegisterAddress registerAddress, unsigned char value, bool debug=false);
+
+  ///! write two values to a register pair of A and B register
+  void writeRegisterPair(RegisterAddress registerAddress, unsigned char valueA, unsigned char valueB, bool debug);
 
   bool currentOutput_[16];  ///< current state of the LEDs (true=on, false=off)
 

@@ -12,7 +12,7 @@
 
 IOExtender::IOExtender(Control &control, SPIComponent spiComponent, int hardwareAddress) :
   control_(control),
-  spiComponent_(spiComponent_),
+  spiComponent_(spiComponent),
   hardwareAddress_(hardwareAddress)
 {
   if(hardwareAddress_ < 0 || hardwareAddress_ >= 8)
@@ -140,6 +140,38 @@ unsigned char IOExtender::readRegister(RegisterAddress registerAddress, bool deb
   return buffer[2];
 }
 
+///! read the value of a register pair (2 bytes)
+void IOExtender::readRegisterPair(RegisterAddress registerAddress, unsigned char output[2], bool debug)
+{
+  if(!configured_)
+    configure();
+
+  unsigned char buffer[4];
+
+  // chip select byte and command
+  buffer[0] = deviceOpcode_ | RegisterCommand::read;
+
+  // register select byte
+  buffer[1] = registerAddress;
+
+  // data bytes
+  buffer[2] = 0x00; // dummy value
+  buffer[3] = 0x00; // dummy value
+
+  control_.spiTransfer(spiComponent_, buffer, sizeof(buffer));
+
+  if(debug)
+  {
+    std::cout<<"readRegisterPair("<<registerAddressName[registerAddress]<<"): "
+      <<std::hex<<std::setfill('0')<<std::setw(2)<<int(buffer[2])<<" "
+      <<std::setfill('0')<<std::setw(2)<<int(buffer[3])<<std::dec<<std::endl;
+  }
+
+  // copy the two last returned values to output variable
+  output[0] = buffer[2];
+  output[1] = buffer[3];
+}
+
 ///! write a value to a register
 void IOExtender::writeRegister(RegisterAddress registerAddress, unsigned char value, bool debug)
 {
@@ -157,6 +189,10 @@ void IOExtender::writeRegister(RegisterAddress registerAddress, unsigned char va
   // data byte
   buffer[2] = value;
 
+  std::cout<<"====== now bus should be released ======== "<<std::endl;
+  //std::cout<<"====== now bus should be released ======== "<<std::string(80,'\b');
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  std::cout<<"                                                "<<std::endl;
   control_.spiTransfer(spiComponent_, buffer, sizeof(buffer));
 
   if(debug)
@@ -165,6 +201,38 @@ void IOExtender::writeRegister(RegisterAddress registerAddress, unsigned char va
       <<", old value: "<<std::setfill('0')<<std::setw(2)<<int(buffer[2])<<std::dec<<std::endl;
     std::cout<<"for debugging, read same register:"<<std::endl;
     readRegister(registerAddress, true);
+  }
+}
+
+///! write 2 bytes to a register pair
+void IOExtender::writeRegisterPair(RegisterAddress registerAddress, unsigned char valueA, unsigned char valueB, bool debug)
+{
+  if(!configured_)
+    configure();
+
+  unsigned char buffer[4];
+
+  // chip select byte and command
+  buffer[0] = deviceOpcode_ | RegisterCommand::write;
+
+  // register select byte
+  buffer[1] = registerAddress;
+
+  // data bytes
+  buffer[2] = valueA;
+  buffer[3] = valueB;
+
+  control_.spiTransfer(spiComponent_, buffer, sizeof(buffer));
+
+  if(debug)
+  {
+    std::cout<<"writeRegisterPair("<<registerAddressName[registerAddress]<<"): "
+      <<std::hex<<std::setfill('0')<<std::setw(2)<<int(valueA)<<" "<<std::setfill('0')<<std::setw(2)<<int(valueB)
+      <<", old values: "<<std::setfill('0')<<std::setw(2)<<int(buffer[2])<<" "
+      <<std::setfill('0')<<std::setw(2)<<int(buffer[3])<<std::dec<<std::endl;
+    std::cout<<"for debugging, read same register:"<<std::endl;
+    unsigned char output[2];
+    readRegisterPair(registerAddress, output, true);
   }
 }
 
@@ -254,6 +322,12 @@ void IOExtender::outputAllSettings(bool withLegend)
   }
 }
 
+void IOExtender::setPinIODirection(IODirection ioDirectionA[8], IODirection ioDirectionB[8])
+{
+  memcpy(&ioDirectionA_, &ioDirectionA, 8*sizeof(IODirection));
+  memcpy(&ioDirectionB_, &ioDirectionB, 8*sizeof(IODirection));
+}
+
 void IOExtender::showChasingLight()
 {
   std::cout<<"IOExtender::showChasingLight"<<std::endl;
@@ -261,14 +335,14 @@ void IOExtender::showChasingLight()
   for(int i=0; i<16; i++)
   {
     // set all LEDs
-    for(int j=0; j<16; j++)
+    for(int j=0; j<4; j++)
     {
       setOutputCached(j, i==j);
     }
-    applyOutputValues();
+    applyOutputValues(true);
 
     // sleep
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
 }
 
@@ -297,23 +371,19 @@ void IOExtender::setOutput(bool on[16])
   applyOutputValues();
 }
 
-void IOExtender::applyOutputValues()
+void IOExtender::applyOutputValues(bool debug)
 {
   if(!configured_)
-    configure();
+    configure(true);
 
-  unsigned char buffer[4];
-  buffer[0] = deviceOpcode_ | RegisterCommand::write;
-  buffer[1] = RegisterAddress::OLATA;
-  buffer[2] = 0x00;
-  buffer[3] = 0x00;
+  unsigned char data[2] = {0,0};
 
   // set first data byte
   int i=0;
   unsigned char mask = 0x01;
   for(i=0; i<8; i++)
   {
-    buffer[2] |= (currentOutput_[i]? 1 : 0) * mask;
+    data[0] |= (currentOutput_[i]? 1 : 0) * mask;
     mask <<= 1;
   }
 
@@ -321,15 +391,15 @@ void IOExtender::applyOutputValues()
   mask = 0x01;
   for(i=8; i<16; i++)
   {
-    buffer[3] |= (currentOutput_[i]? 1 : 0) * mask;
+    data[1] |= (currentOutput_[i]? 1 : 0) * mask;
     mask <<= 1;
   }
 
-  control_.spiTransfer(spiComponent_, buffer, sizeof(buffer));
+  writeRegisterPair(RegisterAddress::OLATA, data[0], data[1], debug);
 }
 
 uint32_t IOExtender::maximumSPIBitrate()
 {
 return 1e4;
-  return 10e6;    // 10 MHz
+  //return 10e6;    // 10 MHz
 }
