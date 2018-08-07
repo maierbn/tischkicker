@@ -1,0 +1,178 @@
+Scanning USB devices . . .1 Device(s) found.    
+ Device 0: 
+  product:      "Tischkicker Control"
+  manufacturer: "Benjamin Maier"
+  vendor id:     1240, product id: 222
+  serial number: 0000232437, release number: 2
+  interface number: 0, path: "/dev/hidraw0"
+
+Open device "Tischkicker Control", "Benjamin Maier".
+Warning: MotorDriver configuration of no 0, Motor0 disabled!
+Warning: MotorDriver configuration of no 1, Motor1 disabled!
+Warning: MotorDriver configuration of no 2, Motor2 disabled!
+Warning: MotorDriver configuration of no 3, Motor3 disabled!
+Warning: MotorDriver configuration of no 4, Motor4 disabled!
+Warning: MotorDriver configuration of no 5, Motor5 disabled!
+Warning: MotorDriver configuration of no 6, Motor6 disabled!
+Warning: MotorDriver configuration of no 7, Motor7 disabled!
+Warning: MotorDriver configuration of no 8, Motor8 disabled!
+Warning: MotorDriver configuration of no 9, Motor9 disabled!
+Warning: MotorDriver configuration of no 10, Motor10 disabled!
+Warning: MotorDriver configuration of no 11, Motor11 disabled!
+Warning: MotorDriver configuration of no 12, Motor12 disabled!
+Warning: MotorDriver configuration of no 13, Motor13 disabled!
+Warning: MotorDriver configuration of no 14, Motor14 disabled!
+Warning: MotorDriver configuration of no 15, Motor15 disabled!
+SPIBridge Settings
+------ Power-up Chip Settings -------
+Pin Designation:  0:GPIO 1:CS 2:function 3:function 4:function 5:function 6:function 7:GPIO 8:GPIO 
+I/O Value:        0:1 1:1 2:1 3:1 4:1 5:1 6:1 7:1 8:1 
+I/O Direction:    0:in 1:in 2:in 3:in 4:in 5:in 6:in 7:in 8:in 
+enableRemoteWakeUp:   true
+interruptPinMode:     count rising edges
+enableSPIBusRelease:  true
+bitRate:              1000000 (1 MHz)
+idleChipSelect:   0:1 1:1 2:1 3:1 4:1 5:1 6:1 7:1 8:1 
+activeChipSelect: 0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0 8:0 
+delayCSToData:        0 s
+delayLastByteToCS:    0 s
+delayDataToData:      0 s
+spiTransactionLength: 4
+spiMode:              0
+------ Current Chip Settings -------
+Pin Designation:  0:GPIO 1:GPIO 2:GPIO 3:function 4:GPIO 5:GPIO 6:CS 7:CS 8:CS 
+I/O Value:        0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0 8:0 
+I/O Direction:    0:out 1:out 2:out 3:out 4:out 5:out 6:out 7:out 8:out 
+enableRemoteWakeUp:   false
+interruptPinMode:     no interrupt counting
+enableSPIBusRelease:  true
+bitRate:              1464 (1.464 kHz)
+idleChipSelect:   0:1 1:1 2:1 3:1 4:1 5:1 6:1 7:1 8:1 
+activeChipSelect: 0:1 1:1 2:1 3:1 4:1 5:1 6:1 7:1 8:1 
+delayCSToData:        1 s
+delayLastByteToCS:    1 s
+delayDataToData:      1 s
+spiTransactionLength: 2 Byte(s)
+spiMode:              0
+------ USB Settings -------
+vendorId:             1240
+productId:            222
+hostPowered:          true
+remoteWakeUpCapable:  false
+currentAmountFromHost:500 mA
+manufacturerName: Benjamin Maier
+productName:      Tischkicker Control
+----------------------------------------
+Configuration of SPI Bridge done.
+
+======================
+Control::testLEDs
+Test 6: chasing light on mainboard
+IOExtender::showChasingLight
+====== now bus should be released ======== 
+                                                
+writeRegister(IOCON): 2c, old value: 00
+for debugging, read same register:
+readRegister(IOCON): 00
+====== now bus should be released ======== 
+                                                
+writeRegister(IODIRA): ff, old value: 00
+for debugging, read same register:
+readRegister(IODIRA): 00
+====== now bus should be released ======== 
+                                                
+writeRegister(IODIRB): ff, old value: 00
+for debugging, read same register:
+readRegister(IODIRB): 00
+====== now bus should be released ======== 
+                                                
+writeRegister(GPINTENA): ff, old value: 00
+for debugging, read same register:
+readRegister(GPINTENA): 00
+====== now bus should be released ======== 
+                                                
+writeRegister(GPINTENB): ff, old value: 00
+for debugging, read same register:
+readRegister(GPINTENB): 00
+====== now bus should be released ======== 
+                                                
+writeRegister(INTCONA): ff, old value: 00
+for debugging, read same register:
+readRegister(INTCONA): 00
+====== now bus should be released ======== 
+                                                
+writeRegister(INTCONB): ff, old value: 00
+for debugging, read same register:
+readRegister(INTCONB): 00
+====== now bus should be released ======== 
+                                                
+writeRegister(DEFVALA): ff, old value: 00
+for debugging, read same register:
+readRegister(DEFVALA): 00
+====== now bus should be released ======== 
+                                                
+writeRegister(DEFVALB): ff, old value: 00
+for debugging, read same register:
+readRegister(DEFVALB): 00
+Configuration of I/O-Extender (0) done.
+Failed to store transfer settings to chip.
+Reconnect to HID device at "/dev/hidraw0".
+Failed to store transfer settings to chip.
+Reconnect to HID device at "/dev/hidraw0".
+Failed to store transfer settings to chip.
+Reconnect to HID device at "/dev/hidraw0".
+Failed to store transfer settings to chip.
+Reconnect to HID device at "/dev/hidraw0".
+Failed to store transfer settings to chip.
+Reconnect to HID device at "/dev/hidraw0".
+Failed to store transfer settings to chip.
+Reconnect to HID device at "/dev/hidraw0".
+writeRegisterPair(OLATA): 01 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 02 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 04 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 08 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 00 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 00 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 00 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 00 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 00 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 00 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 00 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 00 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 00 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 00 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 00 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+writeRegisterPair(OLATA): 00 00, old values: 00 00
+for debugging, read same register:
+readRegisterPair(OLATA): 00 00
+Program done.

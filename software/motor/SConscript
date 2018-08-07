@@ -1,0 +1,7 @@
+Import('env')     # import Environment object from calling SConstruct
+
+# define the source files
+src_files = Glob('src/*.c') + Glob('src//*.cpp')
+
+# create the main executable
+env.Program(target = 'run', source = src_files)

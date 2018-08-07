@@ -335,7 +335,7 @@ void IOExtender::showChasingLight()
   for(int i=0; i<16; i++)
   {
     // set all LEDs
-    for(int j=0; j<4; j++)
+    for(int j=0; j<16; j++)
     {
       setOutputCached(j, i==j);
     }
@@ -400,6 +400,6 @@ void IOExtender::applyOutputValues(bool debug)
 
 uint32_t IOExtender::maximumSPIBitrate()
 {
-return 1e4;
+return 1e3;
   //return 10e6;    // 10 MHz
 }

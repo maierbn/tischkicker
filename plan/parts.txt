@@ -30,3 +30,9 @@ Connectors wire-to-board
 16   1x4 (Main-MotorCtl)
 16   1x5 (Main-MotorSPI)
 2    2x24 (Main-I/O)
+
+boards
+AK-MCP2210: 
+no 1: un-soldered, does not work
+no 2: soldered with unleaded tin, works
+no 3: soldered with leaded tin, works

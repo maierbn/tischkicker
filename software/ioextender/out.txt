@@ -1,0 +1,94 @@
+Scanning USB devices . . .1 Device(s) found.    
+ Device 0: 
+  product:      "MCP2210 USB to SPI Master"
+  manufacturer: "Microchip Technology Inc."
+  vendor id:     1240, product id: 222
+  serial number: 0000232627, release number: 2
+  interface number: 0, path: "/dev/hidraw0"
+
+Open device "MCP2210 USB to SPI Master", "Microchip Technology Inc.".
+SPIBridge::getTransferSettings(currentValues=false)
+response: 61 0 10 20 40 42 f 0 ff ff 0 0 0 0 0 0 0 0 4 0 0 
+SPIBridge::getTransferSettings(currentValues=true)
+response: 41 0 11 0 10 27 0 0 ff 1 0 0 10 27 10 27 10 27 3 0 0 
+Failed to store transfer settings to chip.
+Reconnect to HID device at "/dev/hidraw0".
+Failed to store transfer settings to chip.
+Reconnect to HID device at "/dev/hidraw0".
+Failed to store transfer settings to chip.
+Reconnect to HID device at "/dev/hidraw0".
+SPIBridge::getTransferSettings(currentValues=false)
+response: 61 0 10 0 40 42 f 0 ff ff 0 0 0 0 0 0 0 0 4 0 0 
+SPIBridge::getTransferSettings(currentValues=true)
+response: 41 0 11 0 10 27 0 0 ff 1 0 0 10 27 10 27 10 27 3 0 0 
+SPIBridge Settings
+------ Power-up Chip Settings -------
+Pin Designation:  0:GPIO 1:CS 2:function 3:function 4:function 5:function 6:function 7:GPIO 8:GPIO 
+I/O Value:        0:1 1:1 2:1 3:1 4:1 5:1 6:1 7:1 8:1 
+I/O Direction:    0:in 1:in 2:in 3:in 4:in 5:in 6:in 7:in 8:in 
+enableRemoteWakeUp:   true
+interruptPinMode:     count rising edges
+enableSPIBusRelease:  true
+bitRate:              1000000 (1 MHz)
+idleChipSelect:   0:1 1:1 2:1 3:1 4:1 5:1 6:1 7:1 8:1 
+activeChipSelect: 0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0 8:0 
+delayCSToData:        0 s
+delayLastByteToCS:    0 s
+delayDataToData:      0 s
+spiTransactionLength: 4
+spiMode:              0
+------ Current Chip Settings -------
+Pin Designation:  0:GPIO 1:GPIO 2:GPIO 3:GPIO 4:function 5:GPIO 6:CS 7:GPIO 8:GPIO 
+I/O Value:        0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0 8:0 
+I/O Direction:    0:out 1:out 2:out 3:out 4:out 5:out 6:out 7:out 8:out 
+enableRemoteWakeUp:   false
+interruptPinMode:     no interrupt counting
+enableSPIBusRelease:  true
+bitRate:              10000 (10 kHz)
+idleChipSelect:   0:1 1:1 2:1 3:1 4:1 5:1 6:1 7:1 8:1 
+activeChipSelect: 0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0 8:0 
+delayCSToData:        1 s
+delayLastByteToCS:    1 s
+delayDataToData:      1 s
+spiTransactionLength: 3 Byte(s)
+spiMode:              0
+------ USB Settings -------
+vendorId:             1240
+productId:            222
+hostPowered:          true
+remoteWakeUpCapable:  false
+currentAmountFromHost:500 mA
+manufacturerName: Benjamin Maier
+productName:      I/O Extender Test
+----------------------------------------
+Configuration of SPI Bridge done.
+
+======================
+Control::testLEDs
+IOExtender::showChasingLight
+====== now bus should be released ======== 
+                                                
+writeRegister(IOCON): 2c, old value: 00
+for debugging, read same register:
+readRegister(IOCON): 00
+====== now bus should be released ======== 
+                                                
+writeRegister(IODIRA): 7f, old value: 00
+for debugging, read same register:
+readRegister(IODIRA): 00
+====== now bus should be released ======== 
+                                                
+writeRegister(IODIRB): ff, old value: 00
+for debugging, read same register:
+readRegister(IODIRB): 00
+====== now bus should be released ======== 
+                                                
+writeRegister(GPINTENA): ff, old value: 2c
+for debugging, read same register:
+readRegister(GPINTENA): 00
+====== now bus should be released ======== 
+                                                
+writeRegister(GPINTENB): ff, old value: 00
+for debugging, read same register:
+readRegister(GPINTENB): 00
+====== now bus should be released ======== 

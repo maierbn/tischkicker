@@ -98,11 +98,6 @@ void Control::initializeSPIBridge()
   double delayLastByteToCS = 10e-9;
   double delayDataToData = 10e-9;
 
-  // debugging values
-  delayCSToData = 1;
-  delayLastByteToCS = 1;
-  delayDataToData = 1;
-
   int spiTransactionLength = 2;   // 2 bytes per packet
   SPIBridge::SPIMode spiMode = SPIBridge::SPIMode::mode0;
 
@@ -155,16 +150,16 @@ void Control::selectChip(SPIComponent spiComponent, int spiTransactionLength)
       }
 
       // set values of chip select pins
-      activeChipSelect_[PinCSMotor1] = SPIBridge::ChipSelectValue::CSInactive;
-      activeChipSelect_[PinCSMotor2] = SPIBridge::ChipSelectValue::CSInactive;
-      activeChipSelect_[PinCSAux] = SPIBridge::ChipSelectValue::CSActive;
+      activeChipSelect_[PinCSMotor1] = SPIBridge::ChipSelectValue::CSInactive;    // GPIO 6
+      activeChipSelect_[PinCSMotor2] = SPIBridge::ChipSelectValue::CSInactive;    // GPIO 7
+      activeChipSelect_[PinCSAux] = SPIBridge::ChipSelectValue::CSActive;         // GPIO 8
 
       idleChipSelect_[PinCSMotor1] = SPIBridge::ChipSelectValue::CSInactive;
       idleChipSelect_[PinCSMotor2] = SPIBridge::ChipSelectValue::CSInactive;
       idleChipSelect_[PinCSAux] = SPIBridge::ChipSelectValue::CSInactive;
 
-      // case direct connection via GPIO6 (CSMotor1)
-      if(true)
+      // case direct connection via GPIO6 (CSMotor1) (not possible with motor board)
+      if(false)
       {
         activeChipSelect_[PinCSMotor1] = SPIBridge::ChipSelectValue::CSActive;
         activeChipSelect_[PinCSMotor2] = SPIBridge::ChipSelectValue::CSInactive;
@@ -188,7 +183,7 @@ void Control::selectChip(SPIComponent spiComponent, int spiTransactionLength)
       // store settings to spi bridge
       spiBridge_.prepareSPITransfer(idleChipSelect_, activeChipSelect_, bitRate_, currentSPITransferLength_);
 
-      // set values of address pins
+      // set values of address pins (not needed, when jumper GPIO8 - ¬CSIO is set)
       int newAddress = 0;
       switch(spiComponent)
       {
@@ -259,7 +254,7 @@ void Control::selectChip(SPIComponent spiComponent, int spiTransactionLength)
       return;
     }
   }
-  collectAndPrintSettings();
+  //collectAndPrintSettings();
 }
 
 void Control::spiTransfer(SPIComponent spiComponent, unsigned char *buffer, int length)
@@ -274,7 +269,21 @@ void Control::spiTransfer(SPIComponent spiComponent, unsigned char *buffer, int 
   spiBridge_.prepareSPITransfer(idleChipSelect_, activeChipSelect_, bitRate_, length);
 
   // transfer data
+  std::cout<<".";
   spiBridge_.spiTransfer(spiSendBuffer, spiRecvBuffer, length);
+  std::cout<<".";
+  spiBridge_.spiTransfer(spiSendBuffer, spiRecvBuffer, length);
+  std::cout<<".";
+  spiBridge_.spiTransfer(spiSendBuffer, spiRecvBuffer, length);
+  std::cout<<".";
+  spiBridge_.spiTransfer(spiSendBuffer, spiRecvBuffer, length);
+  std::cout<<".";
+  spiBridge_.spiTransfer(spiSendBuffer, spiRecvBuffer, length);
+  std::cout<<".";
+  spiBridge_.spiTransfer(spiSendBuffer, spiRecvBuffer, length);
+  std::cout<<".";
+  spiBridge_.spiTransfer(spiSendBuffer, spiRecvBuffer, length);
+  std::cout<<".";
 
   // copy receive buffer back to buffer
   memcpy(buffer, spiRecvBuffer, length);
@@ -459,8 +468,8 @@ void Control::testLEDs()
   }
 
   std::cout<<"Test 6: chasing light on mainboard"<<std::endl;
-  ledOutput_.showChasingLight();
-  //mainboardIO_.showChasingLight();
+  //ledOutput_.showChasingLight();
+  mainboardIO_.showChasingLight();
 
 }
 

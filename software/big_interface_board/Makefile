@@ -9,8 +9,6 @@ C_SOURCES=hid.c
 CPP_SOURCES=main.cpp control.cpp spi_bridge.cpp motor_driver.cpp io_extender.cpp analog_digital_converter.cpp
 
 all:
-	scons BUILD_TYPE=d
-manual:
 	${CC} -c ${C_SOURCES} ${CFLAGS}
 	#${CPP} -c ${CPP_SOURCES} ${CFLAGS}
 	${CPP} ${CPP_SOURCES} hid.o ${CFLAGS} ${LDFLAGS} -o ${OUTPUT}
