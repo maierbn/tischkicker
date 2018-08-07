@@ -1,0 +1,32 @@
+
+0.47 uF (ceramic capacitor) V_USB to GND
+2x 1 kΩ ¬RST to VDD(5V)
+
+LEDs        Widerstände
+18x Grün    18x 140Ω   (150)
+16x Rot     16x 138Ω   (150)
+17x Orange  17x  97Ω   (100)
+2x Blau     1x   60Ω  (62) 1x 693Ω (680)
+1x Weiß     1x   90Ω   (90)
+2x Amber    2x  140Ω   (150)
+4x Gelb     4x   87Ω   (90)
+
+ICs
+1x MCP2210  (USB to SPI)
+6x 74LS04   (not)
+4x CD4028B  (demux)
+1x MCP23S17 (shift register)
+
+MISC
+OSZI
+USB-Buchse
+2x Taster
+
+Connectors wire-to-board
+1    1x20 oder 1x19 (Main-SPIMaster)
+2    1x1 (V_M-I/O, MISO(debug))
+1    Jumper 1x1
+1    1x2 (Main-GND_Vcc(debug))
+16   1x4 (Main-MotorCtl)
+16   1x5 (Main-MotorSPI)
+2    2x24 (Main-I/O)

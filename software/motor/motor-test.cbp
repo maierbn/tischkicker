@@ -15,12 +15,19 @@
 			</Target>
 		</Build>
 		<Unit filename="Makefile" />
+		<Unit filename="control.cpp" />
+		<Unit filename="control.h" />
 		<Unit filename="hid.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="io_extender.cpp" />
+		<Unit filename="io_extender.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="motor_driver.cpp" />
+		<Unit filename="motor_driver.h" />
 		<Unit filename="spi_bridge.cpp" />
 		<Unit filename="spi_bridge.h" />
+		<Unit filename="spi_component.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />

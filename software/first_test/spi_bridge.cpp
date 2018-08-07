@@ -11,6 +11,9 @@
 #include <locale>
 #include <codecvt>
 
+
+const bool DEBUG = true;
+
 SPIBridge::SPIBridge()
 {
   initDevice();
@@ -130,6 +133,9 @@ void SPIBridge::initDevice()
 void SPIBridge::setSettings(bool currentValues, PinDesignation pinDesignation[9], bool ioValue[9], bool ioDirection[9],
     bool enableRemoteWakeUp, InterruptPinMode interruptPinMode, bool enableSPIBusRelease)
 {
+  if(DEBUG)
+    std::cout << "SPIBridge::setSettings(currentValues=" << std::boolalpha << currentValues << ")" << std::endl;
+
   //initialize buffer to 0
   memset(buffer, 0x00, 64);
 
@@ -221,6 +227,8 @@ void SPIBridge::setSettings(bool currentValues, PinDesignation pinDesignation[9]
 void SPIBridge::setTransferSettings(bool currentValues, uint32_t bitRate, bool idleChipSelect[9], bool activeChipSelect[9],
   double delayCSToData, double delayLastByteToCS, double delayDataToData, int32_t spiTransactionLength, SPIMode spiMode)
 {
+  if(DEBUG)
+    std::cout << "SPIBridge::setTransferSettings(currentValues=" << std::boolalpha << currentValues << ")" << std::endl;
 
   for(;;)
   {
@@ -349,6 +357,9 @@ void SPIBridge::setTransferSettings(bool currentValues, uint32_t bitRate, bool i
 
 void SPIBridge::setUSBKeyParameters(int16_t vendorId, int16_t productId, bool hostPowered, bool remoteWakeUpCapable, int currentAmountFromHost)
 {
+  if(DEBUG)
+    std::cout << "SPIBridge::setUSBKeyParameters" << std::endl;
+
   // initialize buffer to 0
   memset(buffer, 0x00, 64);
 
@@ -405,6 +416,9 @@ void SPIBridge::setUSBKeyParameters(int16_t vendorId, int16_t productId, bool ho
 
 void SPIBridge::setManufacturerName(std::wstring manufacturerName)
 {
+  if(DEBUG)
+    std::cout << "SPIBridge::setManufacturerName" << std::endl;
+
   if(manufacturerName.length() > 29)
   {
     manufacturerName.erase(29);
@@ -456,6 +470,9 @@ void SPIBridge::setManufacturerName(std::wstring manufacturerName)
 
 void SPIBridge::setProductName(std::wstring productName)
 {
+  if(DEBUG)
+    std::cout << "SPIBridge::setProductName" << std::endl;
+
   if(productName.length() > 29)
   {
     productName.erase(29);
@@ -506,6 +523,9 @@ void SPIBridge::setProductName(std::wstring productName)
 
 void SPIBridge::getTransferSettings(bool currentValues)
 {
+  if(DEBUG)
+    std::cout << "SPIBridge::getTransferSettings(currentValues=" << std::boolalpha << currentValues << ")" << std::endl;
+
   // initialize buffer to 0
   memset(buffer, 0x00, 64);
 
@@ -611,6 +631,9 @@ void SPIBridge::getTransferSettings(bool currentValues)
 
 void SPIBridge::getSettings(bool currentValues)
 {
+  if(DEBUG)
+    std::cout << "SPIBridge::getSettings(currentValues=" << std::boolalpha << currentValues << ")" << std::endl;
+
   // initialize buffer to 0
   memset(buffer, 0x00, 64);
 
@@ -688,6 +711,9 @@ void SPIBridge::getSettings(bool currentValues)
 
 void SPIBridge::getUSBKeyParameters()
 {
+  if(DEBUG)
+    std::cout << "SPIBridge::getUSBKeyParameters" << std::endl;
+
   // initialize buffer to 0
   memset(buffer, 0x00, 64);
 
@@ -735,6 +761,9 @@ void SPIBridge::getUSBKeyParameters()
 
 void SPIBridge::getManufacturerName()
 {
+  if(DEBUG)
+    std::cout << "SPIBridge::getManufacturerName" << std::endl;
+
   // initialize buffer to 0
   memset(buffer, 0x00, 64);
 
@@ -777,6 +806,9 @@ void SPIBridge::getManufacturerName()
 
 void SPIBridge::getProductName()
 {
+  if(DEBUG)
+    std::cout << "SPIBridge::getProductName" << std::endl;
+
   // initialize buffer to 0
   memset(buffer, 0x00, 64);
 
@@ -818,6 +850,9 @@ void SPIBridge::getProductName()
 
 void SPIBridge::getCurrentPinDirection()
 {
+  if(DEBUG)
+    std::cout << "SPIBridge::getCurrentPinDirection" << std::endl;
+
   // initialize buffer to 0
   memset(buffer, 0x00, 64);
 
@@ -849,6 +884,9 @@ void SPIBridge::getCurrentPinDirection()
 
 void SPIBridge::setCurrentPinDirection(bool ioDirection[9])
 {
+  if(DEBUG)
+    std::cout << "SPIBridge::setCurrentPinDirection" << std::endl;
+
   // initialize buffer to 0
   memset(buffer, 0x00, 64);
 
@@ -887,6 +925,9 @@ void SPIBridge::setCurrentPinDirection(bool ioDirection[9])
 
 void SPIBridge::getCurrentPinValue()
 {
+  if(DEBUG)
+    std::cout << "SPIBridge::getCurrentPinValue" << std::endl;
+
   // initialize buffer to 0
   memset(buffer, 0x00, 64);
 
@@ -918,6 +959,9 @@ void SPIBridge::getCurrentPinValue()
 
 void SPIBridge::setCurrentPinValue(bool ioValue[9])
 {
+  if(DEBUG)
+    std::cout << "SPIBridge::setCurrentPinValue" << std::endl;
+
   // initialize buffer to 0
   memset(buffer, 0x00, 64);
 
@@ -966,61 +1010,163 @@ void SPIBridge::setCurrentPinValue(bool ioValue[9])
 
 void SPIBridge::spiTransfer(char *data, size_t &length)
 {
-  for(;;)
+  unsigned char recvBuffer[64];
+  memset(recvBuffer, 0, 64);
+
+  if(DEBUG)
+    std::cout << "SPIBridge::spiTransfer" << std::endl;
+
+  // initialize buffer to 0
+  memset(buffer, 0x00, 64);
+
+  if(length > 60)
   {
-    // initialize buffer to 0
-    memset(buffer, 0x00, 64);
+    std::cout<<"Warning: Can only send 60 bytes in one SPI transfer!"<<std::endl;
+    length = 60;
+  }
 
-    if(length > 60)
-    {
-      std::cout<<"Warning: Can only send 60 bytes in one SPI transfer!"<<std::endl;
-      length = 60;
-    }
+  buffer[0] = 0x42;   // command code for "Transfer SPI Data"
+  buffer[1] = length;   // number of bytes to be transferred in this packet
+  buffer[2] = 0x00;   // reserved
+  buffer[3] = 0x00;   // reserved
 
-    buffer[0] = 0x42;   // command code for "Transfer SPI Data"
-    buffer[1] = length;   // number of bytes to be transferred in this packet
-    buffer[2] = 0x00;   // reserved
-    buffer[3] = 0x00;   // reserved
+  memcpy(buffer+4, data, length);
 
-    memcpy(buffer+4, data, length);
+  std::cout<<"  send buffer (hex): ";
+  for(int i=0; i<64; i++)
+  {
+    std::cout<<std::hex<<int(buffer[i])<<" ";
+  }
+  std::cout<<std::dec<<std::endl;
 
+  for(int nMessages = 0; nMessages < 200; nMessages++)
+  {
     // send command
     hid_write(hidDevice_, buffer, 64);
+    std::cout<<"  SPIBridge::spiTransfer hid_write complete"<<std::endl;
+
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
 
     // receive response (blocking)
-    hid_read(hidDevice_, buffer, 64);
+    hid_read(hidDevice_, recvBuffer, 64);
+
+    std::cout<<"  recv buffer (hex): ";
+    for(int i=0; i<64; i++)
+    {
+      std::cout<<std::hex<<int(recvBuffer[i])<<" ";
+    }
+    std::cout<<std::dec<<std::endl;
+
+    std::cout<<"  SPIBridge::spiTransfer hid_read complete, status 0x"<<std::hex<<int(recvBuffer[1])<<std::dec<<std::endl;
 
     // parse response (Response 1 or 2 or 3 in data sheet)
-    assert(buffer[0] == 0x42);
-    if(buffer[1] == 0x00)   // SPI Data accepted, command completed successfully
+    assert(recvBuffer[0] == 0x42);
+    if(recvBuffer[1] == 0x00)   // SPI Data accepted, command completed successfully
     {
+      std::cout<<"> SPI Data accepted: ";
       // parse received bytes
-      length = buffer[2];
-      memcpy(data, buffer+4, length);
+      length = recvBuffer[2];
+      memcpy(data, recvBuffer+4, length);
 
-      if(buffer[3] == 0x20)   // SPI transfer started - no data to receive
+      if(recvBuffer[3] == 0x20)   // SPI transfer started - no data to receive
       {
         std::cout<<"SPI transfer started - no data to receive"<<std::endl;
       }
-      else if(buffer[3] == 0x30)    //SPI transfer not finished; received data available
+      else if(recvBuffer[3] == 0x30)    //SPI transfer not finished; received data available
       {
         std::cout<<"SPI transfer not finished; received data available"<<std::endl;
       }
-      else if(buffer[4] == 0x10)    //SPI transfer finished - no more data to send
+      else if(recvBuffer[3] == 0x10)    //SPI transfer finished - no more data to send
       {
-        std::cout<<"SPI transfer finished - no more data to send"<<std::endl;
+        std::cout<<"SPI transfer finished - no more data to send. Exit SPIBridge::spiTransfer."<<std::endl;
+        break;
       }
-      break;
+      else
+      {
+        std::cout<<"unknown status"<<std::endl;
+      }
+      //break;
     }
-    else if(buffer[1] == 0xF7)    // SPI Data not accepted, SPI bus not available (the external owner has control over it)
+    else if(recvBuffer[1] == 0xF7)    // SPI Data not accepted, SPI bus not available (the external owner has control over it)
     {
+      std::cout<<"> SPI Data not accepted, SPI bus not available (the external owner has control over it)"<<std::endl;
+      getChipStatus();
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
-    else if(buffer[1] == 0xF8)    // SPI Data not accepted, SPI transfer in progress, cannot accept any data for the moment
+    else if(recvBuffer[1] == 0xF8)    // SPI Data not accepted, SPI transfer in progress, cannot accept any data for the moment
     {
+      std::cout<<"> SPI Data not accepted, SPI transfer in progress, cannot accept any data for the moment"<<std::endl;
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
+    else
+    {
+      std::cout<<"> Unknown status of SPI transfer, byte 1 is 0x"<<std::hex<<recvBuffer[1]<<std::dec<<std::endl;
+    }
 	}
+
+}
+
+void SPIBridge::getChipStatus()
+{
+  if(DEBUG)
+    std::cout << "SPIBridge::getChipStatus" << std::endl;
+
+  // initialize buffer to 0
+  memset(buffer, 0x00, 64);
+
+  buffer[0] = 0x10;   // byte 0: command code for "Get MCP2210 Status"
+  // byte 2 to 63: reserved
+
+  // send command
+  hid_write(hidDevice_, buffer, 64);
+
+  // receive response (blocking)
+  hid_read(hidDevice_, buffer, 64);
+
+  // parse response (Response 1 in data sheet)
+  assert(buffer[0] == 0x10);  // byte 0: echos back the given command code
+  assert(buffer[1] == 0x00);  // byte 1: command completed successfully
+
+  std::cout<<"MCP2210 Status: "<<std::endl;
+
+  // byte 2: SPI Bus Release External Request Status
+  if(buffer[2] == 0x01)
+  {
+    std::cout<<"  No External Request for SPI Bus Release"<<std::endl;
+  }
+  else if(buffer[2] == 0x00)
+  {
+    std::cout<<"  Pending External Request for SPI Bus Release"<<std::endl;
+  }
+
+  // byte 3: SPI Bus Current Owner
+  if(buffer[3] == 0x00)
+  {
+    std::cout<<"  SPI Bus current Owner: No Owner"<<std::endl;
+  }
+  else if(buffer[3] == 0x01)
+  {
+    std::cout<<"  SPI Bus current Owner: USB Bridge"<<std::endl;
+  }
+  else if(buffer[3] == 0x02)
+  {
+    std::cout<<"  SPI Bus current Owner: External Master"<<std::endl;
+  }
+
+  // byte 4: Attempted Password Accesses
+  std::cout<<"  Number of Password Attempts: "<<int(buffer[4])<<std::endl;
+
+  // byte 5: Password Guessed
+  if(buffer[5] == 0x00)
+  {
+    std::cout<<"  Password Not Guessed"<<std::endl;
+  }
+  else if(buffer[5] == 0x01)
+  {
+    std::cout<<"  Password Guessed"<<std::endl;
+  }
+
+  // bytes 6 to 63: Don't Care
 
 }
 

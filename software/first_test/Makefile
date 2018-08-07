@@ -6,7 +6,7 @@ LDFLAGS=-ludev
 CFLAGS=-I../hidapi/hidapi -std=c++11 -I/usr/include/libusb-1.0
 OUTPUT=run
 C_SOURCES=hid.c
-CPP_SOURCES=main.cpp spi_bridge.cpp
+CPP_SOURCES=main.cpp spi_bridge.cpp motor_driver.cpp
 
 all:
 	${CC} -c ${C_SOURCES} ${CFLAGS}

@@ -92,6 +92,9 @@ public:
   //! the length of the received data
   void spiTransfer(char *data, size_t &length);
 
+  //! request chip status
+  void getChipStatus();
+
   //! retrieve all retrievable settings from the chip
   void getAllSettings();
 

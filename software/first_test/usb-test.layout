@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<FileVersion major="1" minor="0" />
+	<ActiveTarget name="all" />
+	<File name="motor_driver.cpp" open="1" top="1" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="596" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="main.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="243" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="spi_bridge.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="31685" topLine="37" />
+		</Cursor>
+		<Folding>
+			<Collapse line="22" />
+			<Collapse line="31" />
+			<Collapse line="34" />
+			<Collapse line="51" />
+			<Collapse line="59" />
+			<Collapse line="65" />
+			<Collapse line="71" />
+			<Collapse line="87" />
+			<Collapse line="92" />
+			<Collapse line="103" />
+			<Collapse line="112" />
+			<Collapse line="118" />
+			<Collapse line="124" />
+			<Collapse line="134" />
+			<Collapse line="145" />
+			<Collapse line="153" />
+			<Collapse line="163" />
+			<Collapse line="170" />
+			<Collapse line="179" />
+			<Collapse line="202" />
+			<Collapse line="207" />
+			<Collapse line="215" />
+			<Collapse line="228" />
+			<Collapse line="233" />
+			<Collapse line="241" />
+			<Collapse line="249" />
+			<Collapse line="257" />
+			<Collapse line="272" />
+			<Collapse line="281" />
+			<Collapse line="288" />
+			<Collapse line="323" />
+			<Collapse line="327" />
+			<Collapse line="333" />
+			<Collapse line="337" />
+			<Collapse line="349" />
+			<Collapse line="358" />
+			<Collapse line="371" />
+			<Collapse line="417" />
+			<Collapse line="422" />
+			<Collapse line="443" />
+			<Collapse line="445" />
+			<Collapse line="471" />
+			<Collapse line="476" />
+			<Collapse line="497" />
+			<Collapse line="499" />
+			<Collapse line="524" />
+			<Collapse line="535" />
+			<Collapse line="541" />
+			<Collapse line="560" />
+			<Collapse line="566" />
+			<Collapse line="573" />
+			<Collapse line="585" />
+			<Collapse line="594" />
+			<Collapse line="601" />
+			<Collapse line="632" />
+			<Collapse line="643" />
+			<Collapse line="650" />
+			<Collapse line="664" />
+			<Collapse line="669" />
+			<Collapse line="678" />
+			<Collapse line="685" />
+			<Collapse line="694" />
+			<Collapse line="712" />
+			<Collapse line="735" />
+			<Collapse line="762" />
+			<Collapse line="794" />
+			<Collapse line="796" />
+			<Collapse line="807" />
+			<Collapse line="838" />
+			<Collapse line="840" />
+			<Collapse line="851" />
+			<Collapse line="875" />
+			<Collapse line="885" />
+			<Collapse line="900" />
+			<Collapse line="920" />
+			<Collapse line="926" />
+			<Collapse line="950" />
+			<Collapse line="960" />
+			<Collapse line="975" />
+			<Collapse line="984" />
+			<Collapse line="1002" />
+			<Collapse line="1109" />
+			<Collapse line="1133" />
+			<Collapse line="1137" />
+			<Collapse line="1143" />
+			<Collapse line="1147" />
+			<Collapse line="1151" />
+			<Collapse line="1160" />
+			<Collapse line="1164" />
+			<Collapse line="1186" />
+			<Collapse line="1191" />
+			<Collapse line="1194" />
+			<Collapse line="1198" />
+			<Collapse line="1202" />
+			<Collapse line="1209" />
+			<Collapse line="1215" />
+			<Collapse line="1222" />
+			<Collapse line="1226" />
+			<Collapse line="1230" />
+			<Collapse line="1234" />
+			<Collapse line="1238" />
+			<Collapse line="1242" />
+			<Collapse line="1246" />
+			<Collapse line="1253" />
+			<Collapse line="1259" />
+			<Collapse line="1271" />
+			<Collapse line="1274" />
+			<Collapse line="1278" />
+			<Collapse line="1282" />
+			<Collapse line="1289" />
+			<Collapse line="1295" />
+			<Collapse line="1302" />
+			<Collapse line="1306" />
+			<Collapse line="1310" />
+			<Collapse line="1314" />
+			<Collapse line="1318" />
+			<Collapse line="1322" />
+			<Collapse line="1326" />
+			<Collapse line="1333" />
+			<Collapse line="1339" />
+			<Collapse line="1362" />
+			<Collapse line="1365" />
+		</Folding>
+	</File>
+	<File name="motor_driver.h" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="184" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="spi_bridge.h" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="373" topLine="0" />
+		</Cursor>
+		<Folding>
+			<Collapse line="17" />
+			<Collapse line="24" />
+			<Collapse line="30" />
+			<Collapse line="38" />
+			<Collapse line="114" />
+			<Collapse line="135" />
+		</Folding>
+	</File>
+	<File name="hid.c" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1202" topLine="20" />
+		</Cursor>
+		<Folding>
+			<Collapse line="0" />
+			<Collapse line="47" />
+			<Collapse line="58" />
+			<Collapse line="65" />
+			<Collapse line="73" />
+			<Collapse line="83" />
+			<Collapse line="90" />
+			<Collapse line="95" />
+			<Collapse line="104" />
+			<Collapse line="116" />
+			<Collapse line="119" />
+			<Collapse line="121" />
+			<Collapse line="132" />
+			<Collapse line="135" />
+			<Collapse line="139" />
+			<Collapse line="141" />
+			<Collapse line="146" />
+			<Collapse line="150" />
+			<Collapse line="151" />
+			<Collapse line="158" />
+			<Collapse line="159" />
+			<Collapse line="169" />
+			<Collapse line="170" />
+			<Collapse line="176" />
+			<Collapse line="201" />
+			<Collapse line="209" />
+			<Collapse line="221" />
+			<Collapse line="225" />
+			<Collapse line="231" />
+			<Collapse line="232" />
+			<Collapse line="237" />
+			<Collapse line="260" />
+			<Collapse line="270" />
+			<Collapse line="281" />
+			<Collapse line="286" />
+			<Collapse line="300" />
+			<Collapse line="301" />
+			<Collapse line="320" />
+			<Collapse line="326" />
+			<Collapse line="330" />
+			<Collapse line="338" />
+			<Collapse line="354" />
+			<Collapse line="362" />
+			<Collapse line="376" />
+			<Collapse line="383" />
+			<Collapse line="396" />
+			<Collapse line="406" />
+			<Collapse line="408" />
+			<Collapse line="423" />
+			<Collapse line="434" />
+			<Collapse line="447" />
+			<Collapse line="452" />
+			<Collapse line="459" />
+			<Collapse line="464" />
+			<Collapse line="467" />
+			<Collapse line="490" />
+			<Collapse line="492" />
+			<Collapse line="503" />
+			<Collapse line="510" />
+			<Collapse line="514" />
+			<Collapse line="534" />
+			<Collapse line="549" />
+			<Collapse line="559" />
+			<Collapse line="571" />
+			<Collapse line="573" />
+			<Collapse line="585" />
+			<Collapse line="592" />
+			<Collapse line="594" />
+			<Collapse line="595" />
+			<Collapse line="596" />
+			<Collapse line="601" />
+			<Collapse line="609" />
+			<Collapse line="620" />
+			<Collapse line="631" />
+			<Collapse line="648" />
+			<Collapse line="659" />
+			<Collapse line="668" />
+			<Collapse line="678" />
+			<Collapse line="681" />
+			<Collapse line="682" />
+			<Collapse line="695" />
+			<Collapse line="699" />
+			<Collapse line="700" />
+			<Collapse line="714" />
+			<Collapse line="724" />
+			<Collapse line="729" />
+			<Collapse line="730" />
+			<Collapse line="740" />
+			<Collapse line="751" />
+			<Collapse line="764" />
+			<Collapse line="773" />
+			<Collapse line="778" />
+			<Collapse line="783" />
+			<Collapse line="788" />
+			<Collapse line="794" />
+		</Folding>
+	</File>
+	<File name="Makefile" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="208" topLine="0" />
+		</Cursor>
+	</File>
+</CodeBlocks_layout_file>

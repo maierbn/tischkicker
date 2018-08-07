@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<FileVersion major="1" minor="0" />
+	<ActiveTarget name="all" />
+	<File name="motor_driver.h" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="535" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="motor_driver.cpp" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2985" topLine="0" />
+		</Cursor>
+		<Folding>
+			<Collapse line="23" />
+			<Collapse line="200" />
+			<Collapse line="211" />
+			<Collapse line="245" />
+			<Collapse line="252" />
+			<Collapse line="259" />
+			<Collapse line="270" />
+			<Collapse line="275" />
+			<Collapse line="285" />
+			<Collapse line="299" />
+			<Collapse line="311" />
+			<Collapse line="325" />
+			<Collapse line="330" />
+			<Collapse line="337" />
+			<Collapse line="342" />
+			<Collapse line="350" />
+			<Collapse line="356" />
+			<Collapse line="365" />
+			<Collapse line="373" />
+		</Folding>
+	</File>
+	<File name="control.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="153" topLine="27" />
+		</Cursor>
+		<Folding>
+			<Collapse line="8" />
+		</Folding>
+	</File>
+	<File name="spi_bridge.cpp" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="39939" topLine="164" />
+		</Cursor>
+		<Folding>
+			<Collapse line="32" />
+			<Collapse line="137" />
+			<Collapse line="231" />
+			<Collapse line="357" />
+			<Collapse line="366" />
+			<Collapse line="425" />
+			<Collapse line="479" />
+			<Collapse line="568" />
+			<Collapse line="574" />
+			<Collapse line="644" />
+			<Collapse line="681" />
+			<Collapse line="697" />
+			<Collapse line="724" />
+			<Collapse line="774" />
+			<Collapse line="806" />
+			<Collapse line="808" />
+			<Collapse line="819" />
+			<Collapse line="850" />
+			<Collapse line="852" />
+			<Collapse line="863" />
+			<Collapse line="887" />
+			<Collapse line="897" />
+			<Collapse line="938" />
+			<Collapse line="972" />
+			<Collapse line="987" />
+			<Collapse line="1023" />
+			<Collapse line="1058" />
+			<Collapse line="1088" />
+			<Collapse line="1091" />
+			<Collapse line="1120" />
+			<Collapse line="1126" />
+			<Collapse line="1128" />
+			<Collapse line="1135" />
+			<Collapse line="1137" />
+			<Collapse line="1143" />
+			<Collapse line="1145" />
+			<Collapse line="1154" />
+			<Collapse line="1178" />
+			<Collapse line="1182" />
+			<Collapse line="1188" />
+			<Collapse line="1196" />
+			<Collapse line="1209" />
+			<Collapse line="1218" />
+			<Collapse line="1231" />
+			<Collapse line="1243" />
+			<Collapse line="1247" />
+			<Collapse line="1254" />
+			<Collapse line="1260" />
+			<Collapse line="1327" />
+			<Collapse line="1335" />
+			<Collapse line="1348" />
+			<Collapse line="1423" />
+			<Collapse line="1429" />
+			<Collapse line="1444" />
+			<Collapse line="1455" />
+			<Collapse line="1462" />
+			<Collapse line="1468" />
+		</Folding>
+	</File>
+	<File name="spi_bridge.h" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="359" topLine="138" />
+		</Cursor>
+	</File>
+	<File name="main.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="309" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="control.cpp" open="1" top="1" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4276" topLine="95" />
+		</Cursor>
+		<Folding>
+			<Collapse line="154" />
+			<Collapse line="168" />
+			<Collapse line="217" />
+			<Collapse line="240" />
+			<Collapse line="262" />
+			<Collapse line="292" />
+		</Folding>
+	</File>
+	<File name="spi_component.h" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="109" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="Makefile" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="243" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="io_extender.h" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="828" topLine="0" />
+		</Cursor>
+		<Folding>
+			<Collapse line="64" />
+		</Folding>
+	</File>
+	<File name="io_extender.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3259" topLine="78" />
+		</Cursor>
+		<Folding>
+			<Collapse line="75" />
+			<Collapse line="77" />
+			<Collapse line="80" />
+			<Collapse line="91" />
+			<Collapse line="93" />
+			<Collapse line="102" />
+			<Collapse line="144" />
+		</Folding>
+	</File>
+</CodeBlocks_layout_file>
