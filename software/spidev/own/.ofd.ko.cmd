@@ -1,0 +1,1 @@
+cmd_/store/Office/projekt_tischkicker/software/spidev/own/ofd.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /store/Office/projekt_tischkicker/software/spidev/own/ofd.ko /store/Office/projekt_tischkicker/software/spidev/own/ofd.o /store/Office/projekt_tischkicker/software/spidev/own/ofd.mod.o ;  true

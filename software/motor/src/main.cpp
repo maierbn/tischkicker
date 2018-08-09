@@ -6,14 +6,17 @@
 #include <chrono>
 #include <thread>
 
+#include "init_logging.h"
 #include "control.h"
+#include "easylogging++.h"
 
 int main(int argc, char* argv[])
 {
-  Control control;
-  control.testLEDs();
-  //control.debug();
+  initializeLogging(argc, argv);
 
-  std::cout<<"Program done."<<std::endl;
+  Control control;
+  control.debug();
+
+  LOG(INFO) << "Program done.";
 	return 0;
 }

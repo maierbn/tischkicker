@@ -1,0 +1,20 @@
+2018-08-07 13:53:56,454 INFO [default] MotorDriver::writeRegister(CR0, 00001010 = 0a)
+
+2018-08-07 13:53:56,653 INFO [default] MotorDriver::writeRegister(CR1, 10000000 = 80)
+
+2018-08-07 13:53:56,752 INFO [default] MotorDriver::writeRegister(CR2, 10000000 = 80)
+
+2018-08-07 13:53:56,850 INFO [default] MotorDriver::writeRegister(CR3, 00000001 = 01)
+
+2018-08-07 13:53:57,117 INFO [default] MotorDriver::writeRegister(CR0, 10100101 = a5)
+
+2018-08-07 13:53:57,334 INFO [default] MotorDriver::readRegister(CR0)
+2018-08-07 13:53:57,533 INFO [default]   --------------------------------------------------
+2018-08-07 13:53:57,533 INFO [default]   MotorDriver::parseResponse: register CR0, byte=00 00000000
+2018-08-07 13:53:57,533 INFO [default]   CUR: 0, SM: 000
+2018-08-07 13:53:57,533 INFO [default] Execution paused for 5 seconds to prevent damage to the IC!
+2018-08-07 13:54:02,551 INFO [default] MotorDriver::readRegister(SR0)
+2018-08-07 13:54:02,750 INFO [default]   --------------------------------------------------
+2018-08-07 13:54:02,750 INFO [default]   MotorDriver::parseResponse: register SR0, byte=00 00000000
+2018-08-07 13:54:02,750 INFO [default]   TW: 0, CPFAIL: 0, WD: 0, OPENX: 0, OPENY: 0
+2018-08-07 13:54:02,750 INFO [default] Execution paused for 5 seconds to prevent damage to the IC!
